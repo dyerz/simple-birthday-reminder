@@ -218,6 +218,7 @@ function spreadsheetCells(JSON_response) {
 				birthdaysObject[thisRow]['date-str'] = cellContent;
 				birthdaysObject[thisRow]['age'] = calculateAge(birthdaysObject[thisRow]['date']);
 				birthdaysObject[thisRow]['day-of-year'] = calculateDayOfYear(birthdaysObject[thisRow]['date']);
+				birthdaysObject[thisRow]['days-away'] = calculateDaysAway(birthdaysObject[thisRow]['date']);
 
 				break;
 			case 'B':
@@ -238,13 +239,14 @@ function spreadsheetCells(JSON_response) {
 		birthdaysArray = birthdaysArray.sort(sortByDayOfYear);
 
 		tableHtml = '<table class="draggable" id="content-table">';
-		tableHtml += '<thead><tr><th>Date</th><th>Name</th><th>Age</th></tr></thead>';
+		tableHtml += '<thead><tr><th>Date</th><th>Name</th><th>Age</th><th>Days Away</th><th>Email</th></tr></thead>';
 		for ( var i = 0; i < birthdaysArray.length; i++) {
 			tableHtml += '<tr>';
 
 			tableHtml += '<td>' + birthdaysArray[i]['date-str'] + '</td>';
 			tableHtml += '<td>' + birthdaysArray[i]['name'] + '</td>';
 			tableHtml += '<td>' + birthdaysArray[i]['age'] + '</td>';
+			tableHtml += '<td>' + birthdaysArray[i]['days-away'] + '</td>';
 
 			var email_html = '&nbsp;';
 			if ('e-mail' in birthdaysArray[i]) {
@@ -266,16 +268,61 @@ function spreadsheetCells(JSON_response) {
 
 }
 
+/**
+ * Calculates the age from the date provided
+ * 
+ * @param {Date}
+ *            dataDate Date of birth.
+ * 
+ */
 function calculateAge(dataDate) {
 	var nowDate = new Date();
 	return nowDate.getFullYear() - dataDate.getFullYear();
 }
 
+/**
+ * Calculates the number of days until the next birthday
+ * 
+ * @param {Date}
+ *            dataDate Date of birth.
+ * 
+ */
+function calculateDaysAway(dataDate) {
+	var nowDate = new Date();
+	var nowDayOfYear = calculateDayOfYear(nowDate);
+	var dataDayOfYear = calculateDayOfYear(dataDate);
+	
+	var nextYear = nowDate.getFullYear();
+	dataDate.setFullYear(nextYear);
+	
+	if(nowDayOfYear > dataDayOfYear){
+		dataDate.setFullYear(nextYear + 1);
+	}
+
+	return Math.ceil((dataDate - nowDate) / MILLISECONDS_IN_DAY);
+}
+
+/**
+ * Calculates the day of the year from the date provided
+ * 
+ * @param {Date}
+ *            dayDate Date to calculate.
+ * 
+ */
 function calculateDayOfYear(dayDate){
 	var oneJan = new Date(dayDate.getFullYear(), 0, 1);
 	return Math.ceil((dayDate - oneJan) / MILLISECONDS_IN_DAY);
 }
 
+/**
+ * Function to sort an array by the day-of-year field
+ * 
+ * @param {Object}
+ *            a birthday Object.
+ * @param {Object}
+ *            b birthday Object.
+ * 
+ */
 function sortByDayOfYear(a, b){
 	if(a['day-of-year'] < b['day-of-year']){
 		return -1;
