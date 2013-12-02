@@ -7,9 +7,9 @@ SimpleBirthdayReminder = function(){
 	self = this;
 
 	// test client id
-//	self.clientId = '310837256871-nv2otqr7qojvir1u6enjqh2s7h71tvcj.apps.googleusercontent.com';
+	self.clientId = '310837256871-nv2otqr7qojvir1u6enjqh2s7h71tvcj.apps.googleusercontent.com';
 	// store client id
-	self.clientId = '310837256871-q21g2ngu6vjke564upgul2lf6ssvqg56.apps.googleusercontent.com';
+//	self.clientId = '310837256871-q21g2ngu6vjke564upgul2lf6ssvqg56.apps.googleusercontent.com';
 
 	self.scopes = 'https://www.googleapis.com/auth/drive https://spreadsheets.google.com/feeds';
 	
