@@ -31,9 +31,43 @@ function checkAuth(){
 
 		$('#authorizeButton').on('click', function(){
 			backgroundPage.ga('send', 'event', 'button', 'click', 'authorization');
-			sbr.requestAuth();
-			window.setTimeout(checkAuth, 500);
+
+			gapi.auth.authorize({
+				'client_id' : sbr.clientId,
+				'scope' : sbr.scopes,
+				'immediate' : false
+			}, handleAuthResult);
+			
+			$('#pre-content').hide();
+			$('#content').html('Click Continue after closing the authorization window.<br /><input type="button" id="continueButton" value="Continue" />');
+
+			$('#continueButton').on('click', function(){
+				backgroundPage.ga('send', 'event', 'button', 'click', 'authorization continue');
+
+				$('#pre-content').show();
+				$('#content').html('');
+				sbr.requestAuth();
+				window.setTimeout(checkAuth, 500);
+			});
 		});
+	}
+}
+
+function handleAuthResult(authResult){
+	if (authResult && !authResult.error) {
+		ga('send', 'event', 'automatic', 'authorization', 'success', {
+			'nonInteraction' : 1
+		});
+
+		sbr.requestAuth();
+		window.setTimeout(checkAuth, 1000);
+	}
+	else {
+		ga('send', 'event', 'automatic', 'authorization', 'failure', {
+			'nonInteraction' : 1
+		});
+
+
 	}
 }
 

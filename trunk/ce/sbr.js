@@ -41,7 +41,6 @@ SimpleBirthdayReminder.prototype.load = function(){
  * Check if the current user has authorized the application.
  */
 SimpleBirthdayReminder.prototype.requestAuth = function(){
-	var sbr = this;
 	gapi.auth.authorize({
 		'client_id' : self.clientId,
 		'scope' : self.scopes,
