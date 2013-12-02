@@ -3,6 +3,10 @@ body{
 	font-family: Verdana, Geneva, sans-serif;
 }
 
+#spinner, #spinner-text{
+	display: inline;
+}
+
 #content {
 	width: 100%;
 	max-height: 300px;
