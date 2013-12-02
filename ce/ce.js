@@ -1,4 +1,5 @@
-var CLIENT_ID = '310837256871-nv2otqr7qojvir1u6enjqh2s7h71tvcj.apps.googleusercontent.com';
+//var CLIENT_ID = '310837256871-nv2otqr7qojvir1u6enjqh2s7h71tvcj.apps.googleusercontent.com';
+var CLIENT_ID = '310837256871-q21g2ngu6vjke564upgul2lf6ssvqg56.apps.googleusercontent.com';
 var SCOPES = 'https://www.googleapis.com/auth/drive https://spreadsheets.google.com/feeds';
 var MILLISECONDS_IN_DAY = 86400000;
 
@@ -367,7 +368,7 @@ function spreadsheetCells(JSON_response, targetUrl){
 	$('#pre-content').hide();
 	$('#refresh-spinner').hide();
 	
-	var todayString = $.datepicker.formatDate( "mm/dd/yy", new Date() );
+	var todayString = $.datepicker.formatDate( "mm/dd", new Date() );
 	var birthdayTodayCount = 0;
 
 	var cellsObj = jQuery.parseJSON(JSON_response);
@@ -377,6 +378,8 @@ function spreadsheetCells(JSON_response, targetUrl){
 	var refreshHtml = '';
 
 	var birthdaysArray = [];
+
+	var validFeed = true;
 	
 	if (cellsObj.feed.entry) {
 		var birthdaysObject = {};
@@ -386,25 +389,41 @@ function spreadsheetCells(JSON_response, targetUrl){
 
 			var thisRow = cellTitle.substr(1);
 			if (!(thisRow in birthdaysObject)) {
-				birthdaysObject[thisRow] = {};
+				birthdaysObject[thisRow] = {
+					'today': false,
+					'date': null,
+					'date-str': '',
+					'age': '',
+					'day-of-year': '',
+					'days-away': '',
+					'name': ''
+				};
 			}
 
 			switch (cellTitle[0]) {
 				case 'A':
+					if(cellContent.match(/\d{1,2}\/\d{1,2}\/\d{2,4}/)){
+						var cellDate = $.datepicker.parseDate('mm/dd/yy', cellContent);
+						var cellDateString = $.datepicker.formatDate( "mm/dd", new Date() );
 
-					birthdaysObject[thisRow]['today'] = false;
-
-					if(cellContent == todayString){
-						birthdayTodayCount++;
-						birthdaysObject[thisRow]['today'] = true;
+						if(cellDateString == todayString){
+							birthdayTodayCount++;
+							birthdaysObject[thisRow]['today'] = true;
+						}
+						else{
+							birthdaysObject[thisRow]['days-away'] = calculateDaysAway(birthdaysObject[thisRow]['date']);
+						}
+						
+						birthdaysObject[thisRow]['date'] = cellDate;
+						birthdaysObject[thisRow]['date-str'] = cellContent;
+						birthdaysObject[thisRow]['age'] = calculateAge(birthdaysObject[thisRow]['date']);
+						birthdaysObject[thisRow]['day-of-year'] = calculateDayOfYear(birthdaysObject[thisRow]['date']);
+					}
+					else{
+						tableHtml += '<br />Please put the date in the first column.';
+						validFeed = false;
 					}
 					
-					birthdaysObject[thisRow]['date'] = $.datepicker.parseDate('mm/dd/yy', cellContent);
-					birthdaysObject[thisRow]['date-str'] = cellContent;
-					birthdaysObject[thisRow]['age'] = calculateAge(birthdaysObject[thisRow]['date']);
-					birthdaysObject[thisRow]['day-of-year'] = calculateDayOfYear(birthdaysObject[thisRow]['date']);
-					birthdaysObject[thisRow]['days-away'] = calculateDaysAway(birthdaysObject[thisRow]['date']);
-
 					break;
 				case 'B':
 					birthdaysObject[thisRow]['name'] = cellContent;
@@ -413,58 +432,66 @@ function spreadsheetCells(JSON_response, targetUrl){
 					birthdaysObject[thisRow]['e-mail'] = cellContent;
 					break;
 			}
-		}
-
-
-		for ( var key in birthdaysObject) {
-			birthdaysArray.push(birthdaysObject[key]);
-		}
-		
-		if(birthdayTodayCount == 0){
-			todayDate = $.datepicker.parseDate('mm/dd/yy', todayString);
-			birthdaysArray.push({
-				'today': true,
-				'date': todayDate,
-				'date-str': todayString,
-				'age': '',
-				'day-of-year': calculateDayOfYear(todayDate),
-				'days-away': '',
-				'name': 'Today'
-			});
-		}
-
-		birthdaysArray = birthdaysArray.sort(sortByDayOfYear);
-
-		tableHtml = '<table class="draggable" id="content-table">';
-		tableHtml += '<thead><tr><th>Date</th><th>Name</th><th>Age</th><th>Days Away</th><th>Email</th></tr></thead>';
-		for (var i = 0; i < birthdaysArray.length; i++) {
 			
-			var todayClass = '';
-			
-			if(birthdaysArray[i]['today']){
-				todayClass = ' class="birthdayToday"';
+			if(!validFeed){
+				break;
+			}
+		}
+
+		if(validFeed){
+			for ( var key in birthdaysObject) {
+				birthdaysArray.push(birthdaysObject[key]);
 			}
 			
-			tableHtml += '<tr' + todayClass + '>';
-
-			tableHtml += '<td class="centered">' + birthdaysArray[i]['date-str'] + '</td>';
-			tableHtml += '<td>' + birthdaysArray[i]['name'] + '</td>';
-			tableHtml += '<td class="centered">' + birthdaysArray[i]['age'] + '</td>';
-			tableHtml += '<td class="centered">' + birthdaysArray[i]['days-away'] + '</td>';
-
-			var email_html = '&nbsp;';
-			if ('e-mail' in birthdaysArray[i]) {
-				email_html = '<a href="mailto:' + birthdaysArray[i]['e-mail'] + '">Send Email</a>';
+			if(birthdayTodayCount == 0){
+				todayDate = $.datepicker.parseDate('mm/dd/yy', todayString);
+				birthdaysArray.push({
+					'today': true,
+					'date': todayDate,
+					'date-str': todayString,
+					'age': '',
+					'day-of-year': calculateDayOfYear(todayDate),
+					'days-away': '',
+					'name': 'Today'
+				});
 			}
-
-			tableHtml += '<td>' + email_html + '</td>';
-
-			tableHtml += '</tr>';
+	
+			birthdaysArray = birthdaysArray.sort(sortByDayOfYear);
+	
+			tableHtml = '<table class="draggable" id="content-table">';
+			tableHtml += '<thead><tr><th>Date</th><th>Name</th><th>Age</th><th>Days Away</th><th>Email</th></tr></thead>';
+			for (var i = 0; i < birthdaysArray.length; i++) {
+				
+				var todayClass = '';
+				
+				if(birthdaysArray[i]['today']){
+					todayClass = ' class="birthdayToday"';
+				}
+				
+				tableHtml += '<tr' + todayClass + '>';
+	
+				tableHtml += '<td class="centered">' + birthdaysArray[i]['date-str'] + '</td>';
+				tableHtml += '<td>' + birthdaysArray[i]['name'] + '</td>';
+				tableHtml += '<td class="centered">' + birthdaysArray[i]['age'] + '</td>';
+				tableHtml += '<td class="centered">' + birthdaysArray[i]['days-away'] + '</td>';
+	
+				var email_html = '&nbsp;';
+				if ('e-mail' in birthdaysArray[i]) {
+					email_html = '<a href="mailto:' + birthdaysArray[i]['e-mail'] + '">Send Email</a>';
+				}
+	
+				tableHtml += '<td>' + email_html + '</td>';
+	
+				tableHtml += '</tr>';
+			}
+			tableHtml += '<table>';
 		}
-		tableHtml += '<table>';
 
 		refreshHtml = '<input type="button" value="Refresh" id="refreshTableButton" />';
 		refreshHtml += '<img id="refresh-spinner" class="hidden" src="ajax-loader.gif" />';
+	}
+	else{
+		tableHtml += '<br />Spreadsheet contains no data.';
 	}
 
 	var postContentHtml = '<input type="button" value="Change Spreadsheet" id="changeSpreadsheetButton" />';
