@@ -95,9 +95,10 @@ function showList(result){
 
 	$('#fileLister').on('change', function(evt){
 		localStorage['stored_spreadsheet'] = evt.target.value;
-		var targetUrl = 'https://spreadsheets.google.com/feeds/worksheets/' + evt.target.value + '/private/basic?alt=json';
-		sbr.downloadFile(targetUrl, sbr.spreadsheetWorksheets);
 
+		sbr.loadSpreadsheet();
+		window.setTimeout(showData, 500);
+		
 		$('#spinner-text').html('Retrieving spreadsheet data.');
 		$('#pre-content').show();
 		$('#content').html('');
