@@ -225,7 +225,7 @@ function showData(){
 				refreshHtml += '<img id="refresh-spinner" class="hidden" src="ajax-loader.gif" />';
 			}
 			else{
-				tableHtml += '<br />Spreadsheet contains no data.';
+				tableHtml = 'Spreadsheet contains no data.';
 			}
 		}
 
@@ -273,6 +273,11 @@ function showData(){
 		});		
 	}
 	else{
+		if(localStorage['backgroundTimeout']){
+			backgroundPage.clearTimeout(parseInt(localStorage['backgroundTimeout']));
+		}
+		
+		sbr.loadSpreadsheet();
 		window.setTimeout(showData, 500);
 	}
 }
