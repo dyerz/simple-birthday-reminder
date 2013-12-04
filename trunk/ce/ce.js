@@ -191,6 +191,20 @@ function showData(){
 			}
 			
 			if(birthdaysArray.length > 0){
+				if(sbr.birthdayTodayCount == 0){
+					var todayDate = new Date();
+					var todayString = $.datepicker.formatDate('mm/dd', todayDate);
+					birthdaysArray.push({
+						'today': true,
+						'date': todayDate,
+						'date-str': todayString,
+						'age': '',
+						'day-of-year': sbr.calculateDayOfYear(todayDate),
+						'days-away': '',
+						'name': 'Today'
+					});
+				}
+				
 				birthdaysArray = birthdaysArray.sort(sortByDayOfYear);
 
 				tableHtml = '<table class="draggable" id="content-table">';
@@ -277,7 +291,7 @@ function showData(){
 			backgroundPage.clearTimeout(parseInt(localStorage['backgroundTimeout']));
 		}
 		
-		sbr.loadSpreadsheet();
+		sbr.requestAuth();
 		window.setTimeout(showData, 500);
 	}
 }
