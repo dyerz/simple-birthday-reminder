@@ -27,19 +27,11 @@ SimpleBirthdayReminder = function(){
 	self.validFeed = true;
 	
 	self.birthdaysObject = {};
+	self.birthdayTodayCount = 0;
 	
 }
 
 SimpleBirthdayReminder.prototype.load = function(){
-	(function(i, s, o, g, r, a, m) {
-		i['GoogleAnalyticsObject'] = r;
-		i[r] = i[r] || function() {(i[r].q = i[r].q || []).push(arguments)}, i[r].l = 1 * new Date();
-		a = s.createElement(o), m = s.getElementsByTagName(o)[0];
-		a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
-	})(window, document, 'script', 'https://www.google-analytics.com/analytics.js',
-			'ga');
-
-	ga('create', 'UA-45859822-1', 'google.com');	
 	
 }
 
@@ -69,7 +61,13 @@ SimpleBirthdayReminder.prototype.handleAuthResult = function(authResult){
 		self.authorized = true;
 		// Access token has been successfully retrieved, requests can be sent to
 		// the API.
-		gapi.client.load('drive', 'v2', self.driveAPIOk);
+		
+		if(self.apiOk == false){
+			gapi.client.load('drive', 'v2', self.driveAPIOk);
+		}
+		else{
+			self.loadSpreadsheet();			
+		}
 	}
 	else {
 		ga('send', 'event', 'automatic', 'authorization', 'failure', {
@@ -182,7 +180,7 @@ SimpleBirthdayReminder.prototype.spreadsheetCells = function (JSON_response, tar
 	});
 
 	var todayString = $.datepicker.formatDate("mm/dd", new Date());
-	var birthdayTodayCount = 0;
+	self.birthdayTodayCount = 0;
 
 	var cellsObj = jQuery.parseJSON(JSON_response);
 	
@@ -218,7 +216,7 @@ SimpleBirthdayReminder.prototype.spreadsheetCells = function (JSON_response, tar
 						self.birthdaysObject[thisRow]['day-of-year'] = self.calculateDayOfYear(cellDate);
 						
 						if(cellDateString.substr(0, 5) == todayString){
-							birthdayTodayCount++;
+							self.birthdayTodayCount++;
 							self.birthdaysObject[thisRow]['today'] = true;
 						}
 						else{
@@ -262,7 +260,7 @@ SimpleBirthdayReminder.prototype.spreadsheetCells = function (JSON_response, tar
 	}
 	
 	chrome.browserAction.setBadgeText({
-		text : birthdayTodayCount + ''
+		text : self.birthdayTodayCount + ''
 	});
 
 	if(iconTitle != ''){
@@ -272,11 +270,11 @@ SimpleBirthdayReminder.prototype.spreadsheetCells = function (JSON_response, tar
 	}
 	
 	if(localStorage['backgroundTimeout']){
-		window.clearTimeout(parseInt(localStorage['backgroundTimeout']));
+		this.window.clearTimeout(parseInt(localStorage['backgroundTimeout']));
 	}
 	
 	self.updateComplete = true;
-	localStorage['backgroundTimeout'] = window.setTimeout(self.loadSpreadsheet, MILLISECONDS_IN_HOUR);
+	localStorage['backgroundTimeout'] = this.window.setTimeout(self.loadSpreadsheet, MILLISECONDS_IN_HOUR);
 }
 
 /**
@@ -289,17 +287,24 @@ SimpleBirthdayReminder.prototype.spreadsheetCells = function (JSON_response, tar
  */
 SimpleBirthdayReminder.prototype.downloadFile = function(targetUrl, callback){
 	if (targetUrl) {
-		var accessToken = gapi.auth.getToken().access_token;
-		var xhr = new XMLHttpRequest();
-		xhr.open('GET', targetUrl);
-		xhr.setRequestHeader('Authorization', 'Bearer ' + accessToken);
-		xhr.onload = function(){
-			callback(xhr.responseText, targetUrl);
-		};
-		xhr.onerror = function(){
-			callback(null, null);
-		};
-		xhr.send();
+		var authToken = gapi.auth.getToken()
+		if(authToken){
+			var accessToken = authToken.access_token;
+			var xhr = new XMLHttpRequest();
+			xhr.open('GET', targetUrl);
+			xhr.setRequestHeader('Authorization', 'Bearer ' + accessToken);
+			xhr.onload = function(){
+				callback(xhr.responseText, targetUrl);
+			};
+			xhr.onerror = function(){
+				callback(null, null);
+			};
+			xhr.send();
+			
+		}
+		else{
+			self.requestAuth();
+		}
 	}
 	else {
 		callback(null, null);

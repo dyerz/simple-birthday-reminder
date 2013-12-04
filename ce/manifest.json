@@ -3,8 +3,8 @@
 
   "name": "Simple Birthday Reminder",
   "description": "This extension will help you remember all your friends' birthdays.",
-  "version": "1.2.5",
-  "content_security_policy": "script-src 'self' https://apis.google.com https://www.google-analytics.com; object-src 'self'",
+  "version": "1.2.6",
+  "content_security_policy": "script-src 'self' https://apis.google.com https://ssl.google-analytics.com; object-src 'self'",
   "permissions": [
     "https://*.google.com/"
   ],
