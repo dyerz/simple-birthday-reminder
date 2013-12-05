@@ -115,7 +115,15 @@ SimpleBirthdayReminder.prototype.loadSpreadsheet = function(){
  * 
  */
 SimpleBirthdayReminder.prototype.spreadsheetWorksheets = function(JSON_response, targetUrl){
-	var worksheetsObj = jQuery.parseJSON(JSON_response);
+	var worksheetsObj = {'feed': null};
+	
+	try{
+		worksheetsObj = jQuery.parseJSON(JSON_response);
+	}
+	catch(err){
+		
+	}
+
 	var failed = true;
 	var failedIndex = -1;
 
@@ -182,7 +190,14 @@ SimpleBirthdayReminder.prototype.spreadsheetCells = function (JSON_response, tar
 	var todayString = $.datepicker.formatDate("mm/dd", new Date());
 	self.birthdayTodayCount = 0;
 
-	var cellsObj = jQuery.parseJSON(JSON_response);
+	var cellsObj = {'feed': null};
+	
+	try{
+		cellsObj = jQuery.parseJSON(JSON_response);
+	}
+	catch(err){
+		
+	}
 	
 	var iconTitle = '';
 
