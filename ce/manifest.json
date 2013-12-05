@@ -3,8 +3,8 @@
 
   "name": "Simple Birthday Reminder",
   "description": "This extension will help you remember all your friends' birthdays.",
-  "version": "1.2.6",
-  "content_security_policy": "script-src 'self' https://apis.google.com https://ssl.google-analytics.com; object-src 'self'",
+  "version": "1.2.7",
+  "content_security_policy": "script-src 'self' https://apis.google.com https://*.google-analytics.com; object-src 'self'",
   "permissions": [
     "https://*.google.com/"
   ],
@@ -13,8 +13,9 @@
     "default_popup": "popup.html"
   },
   "background": {
-    "scripts": ["jquery-1.9.1.js",
-				"jquery-ui.js",
+    "scripts": ["js/jquery-1.9.1.js",
+				"js/jquery-ui.js",
+				"js/analytics.js",
 				"sbr.js",
     			"background.js"]
   },  
