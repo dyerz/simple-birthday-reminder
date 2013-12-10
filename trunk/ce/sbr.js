@@ -55,7 +55,7 @@ SimpleBirthdayReminder.prototype.requestAuth = function(){
 SimpleBirthdayReminder.prototype.handleAuthResult = function(authResult){
 	if (authResult && !authResult.error) {
 		ga('send', 'event', 'automatic', 'authorization', 'success', {
-			'nonInteraction' : 1
+			'nonInteraction' : true
 		});
 		self.statusText = 'Authorization successful.';
 		self.authorized = true;
@@ -71,7 +71,7 @@ SimpleBirthdayReminder.prototype.handleAuthResult = function(authResult){
 	}
 	else {
 		ga('send', 'event', 'automatic', 'authorization', 'failure', {
-			'nonInteraction' : 1
+			'nonInteraction' : true
 		});
 
 
@@ -82,7 +82,7 @@ SimpleBirthdayReminder.prototype.driveAPIOk = function(){
 	self.apiOk = true;
 	
 	ga('send', 'event', 'automatic', 'driveAPIOk', 'success', {
-		'nonInteraction' : 1
+		'nonInteraction' : true
 	});
 
 	self.statusText = 'Authorization successful.';
@@ -90,19 +90,26 @@ SimpleBirthdayReminder.prototype.driveAPIOk = function(){
 }
 
 SimpleBirthdayReminder.prototype.loadSpreadsheet = function(){
-	var storedSpreadsheet = localStorage['stored_spreadsheet'];
-	self.updateComplete = false;
+	var storedWorksheetUrl = localStorage['worksheet_url'];
+	
+	if(storedWorksheetUrl){
+		self.downloadFile(storedWorksheetUrl, self.spreadsheetCells);
+	}
+	else{
+		var storedSpreadsheet = localStorage['stored_spreadsheet'];
+		self.updateComplete = false;
 
-	if(storedSpreadsheet){
-		chrome.browserAction.setBadgeText({
-			text : '.'
-		});
+		if(storedSpreadsheet){
+			chrome.browserAction.setBadgeText({
+				text : '.'
+			});
 
-		self.birthdaysObject = {};
-		
-		self.statusText = 'Authorization successful. Retrieving previous spreadsheet.';
-		var targetUrl = 'https://spreadsheets.google.com/feeds/worksheets/' + storedSpreadsheet + '/private/basic?alt=json';
-		self.downloadFile(targetUrl, self.spreadsheetWorksheets);
+			self.birthdaysObject = {};
+			
+			self.statusText = 'Authorization successful. Retrieving previous spreadsheet.';
+			var targetUrl = 'https://spreadsheets.google.com/feeds/worksheets/' + storedSpreadsheet + '/private/basic?alt=json';
+			self.downloadFile(targetUrl, self.spreadsheetWorksheets);
+		}
 	}
 }
 
@@ -144,8 +151,10 @@ SimpleBirthdayReminder.prototype.spreadsheetWorksheets = function(JSON_response,
 
 					if (listUrl) {
 						ga('send', 'event', 'automatic', 'spreadsheetWorksheets', 'success', {
-							'nonInteraction' : 1
+							'nonInteraction' : true
 						});
+						
+						localStorage['worksheet_url'] = listUrl;
 
 						chrome.browserAction.setBadgeText({
 							text : '..'
@@ -177,14 +186,14 @@ SimpleBirthdayReminder.prototype.spreadsheetWorksheets = function(JSON_response,
 	if (failed === true) {
 		self.statusText = 'Problem retrieving spreadsheet worksheets.';
 		ga('send', 'event', 'automatic', 'spreadsheetWorksheets', 'failure', failedIndex, {
-			'nonInteraction' : 1
+			'nonInteraction' : true
 		});
 	}
 }
 
 SimpleBirthdayReminder.prototype.spreadsheetCells = function (JSON_response, targetUrl){
 	ga('send', 'event', 'automatic', 'spreadsheetCells', 'success', {
-		'nonInteraction' : 1
+		'nonInteraction' : true
 	});
 
 	var todayString = $.datepicker.formatDate("mm/dd", new Date());
@@ -289,7 +298,7 @@ SimpleBirthdayReminder.prototype.spreadsheetCells = function (JSON_response, tar
 	}
 	
 	self.updateComplete = true;
-	localStorage['backgroundTimeout'] = this.window.setTimeout(self.loadSpreadsheet, MILLISECONDS_IN_HOUR);
+	localStorage['backgroundTimeout'] = this.window.setTimeout(self.requestAuth, MILLISECONDS_IN_HOUR);
 }
 
 /**

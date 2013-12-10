@@ -56,7 +56,7 @@ function checkAuth(){
 function handleAuthResult(authResult){
 	if (authResult && !authResult.error) {
 		ga('send', 'event', 'automatic', 'authorization', 'success', {
-			'nonInteraction' : 1
+			'nonInteraction' : true
 		});
 
 		sbr.requestAuth();
@@ -64,7 +64,7 @@ function handleAuthResult(authResult){
 	}
 	else {
 		ga('send', 'event', 'automatic', 'authorization', 'failure', {
-			'nonInteraction' : 1
+			'nonInteraction' : true
 		});
 
 
@@ -91,7 +91,7 @@ function showList(result){
 	}
 
 	backgroundPage.ga('send', 'event', 'automatic', 'showList', 'success', spreadsheets.length, {
-		'nonInteraction' : 1
+		'nonInteraction' : true
 	});
 
 	$('#pre-content').hide();
@@ -163,7 +163,7 @@ function insertFileOk(){
 	var sbr = backgroundPage.sbr;
 
 	backgroundPage.ga('send', 'event', 'automatic', 'insertFileOk', 'success', {
-		'nonInteraction' : 1
+		'nonInteraction' : true
 	});
 
 	$('#spinner-text').html('Spreadsheet created. Retrieving list of spreadsheets.');
