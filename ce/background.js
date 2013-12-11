@@ -15,6 +15,17 @@ function addScript(src){
 }
 
 function beginBackgroundUpdate(){
+	ga('send', 'pageview');
+
+	
+	var iconBadgeColor = localStorage['iconBadgecColor'];
+	
+	if(!iconBadgeColor){
+		iconBadgeColor = '#FF0000';
+	}
+	
+	chrome.browserAction.setBadgeBackgroundColor({color: iconBadgeColor});
+	
 	chrome.browserAction.setBadgeText({
 		text : '?'
 	});

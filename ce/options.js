@@ -1,6 +1,10 @@
 window.setTimeout(optionsLoad, 1);
 
 function optionsLoad(){
+	var backgroundPage = chrome.extension.getBackgroundPage();
+	
+	backgroundPage.ga('send', 'pageview');
+	
 	var iconBadgeColor = localStorage['iconBadgecColor'];
 	
 	if(!iconBadgeColor){

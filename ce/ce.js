@@ -8,6 +8,8 @@ function handleClientLoad(){
 function checkAuth(){
 	var backgroundPage = chrome.extension.getBackgroundPage();
 	var sbr = backgroundPage.sbr;
+	
+	backgroundPage.ga('send', 'pageview');
 
 	if(sbr.authorized){
 		if(sbr.apiOk){
