@@ -2,7 +2,7 @@ var sbr = new SimpleBirthdayReminder();
 sbr.load();
 
 ga('create', 'UA-45859822-1', {
-  'cookieDomain': 'chrome-extension://' + chrome.i18n.getMessage("@@extension_id")
+  'cookieDomain': 'auto'
 });	
 
 
