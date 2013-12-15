@@ -9,7 +9,7 @@ body{
 
 #content {
 	width: 100%;
-	max-height: 300px;
+	height: 300px;
 	overflow: auto;
 }
 
@@ -98,6 +98,14 @@ h2:after {
 
 .noborder, .noborder td{
 	border: 0;
+}
+
+.ui-icon{
+	cursor: pointer;
+}
+
+.icon-wrapper{
+	display: inline-block;
 }
 
 div.ui-datepicker {
