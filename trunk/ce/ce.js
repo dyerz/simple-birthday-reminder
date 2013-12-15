@@ -1,4 +1,4 @@
-var FIRST_DATE = 1;
+var SAVE_RELOAD_COUNTER = 0;
 
 /**
  * Called when the client library is loaded to start the auth flow.
@@ -245,7 +245,8 @@ function showData(){
 				}
 				tableHtml += '<table>';			
 
-				refreshHtml = '<input type="button" value="Refresh" id="refreshTableButton" />';
+//				refreshHtml = '<input type="button" value="Refresh" id="refreshTableButton" />';
+				refreshHtml += '<div class="icon-wrapper ui-state-default"><span class="ui-icon ui-icon-refresh" title="Refresh Data" id="refreshTableButton"></span></div>';
 				refreshHtml += '<img id="refresh-spinner" class="hidden" src="ajax-loader.gif" />';
 			}
 			else{
@@ -256,16 +257,19 @@ function showData(){
 			tableHtml = sbr.errorMessage
 		}
 
-		var postContentHtml = '<input type="button" value="Change Spreadsheet" id="changeSpreadsheetButton" />';
+//		var postContentHtml = '<input type="button" value="Change Spreadsheet" id="changeSpreadsheetButton" />';
+		var postContentHtml = '<div class="icon-wrapper ui-state-default"><span class="ui-icon ui-icon-transferthick-e-w" title="Change Spreadsheet" id="changeSpreadsheetButton"></span></div>';
 		
 		var spreadsheetUrl = sbr.spreadsheetUrl;
 		if(spreadsheetUrl){
-			postContentHtml += '<input type="button" value="Edit Spreadsheet" id="viewSpreadsheetButton" />';
+//			postContentHtml += '<input type="button" value="Edit Spreadsheet" id="viewSpreadsheetButton" />';
+			postContentHtml += '<div class="icon-wrapper ui-state-default"><span class="ui-icon ui-icon-document" title="Edit Spreadsheet" id="viewSpreadsheetButton"></span></div>';
 		}
 		
 		var worksheetUrl = localStorage['worksheet_url']
 		if(worksheetUrl){
-			postContentHtml += '<input type="button" value="Add Birthday" id="addBirthdayButton" />';
+//			postContentHtml += '<input type="button" value="Add Birthday" id="addBirthdayButton" />';
+			postContentHtml += '<div class="icon-wrapper ui-state-default"><span class="ui-icon ui-icon-plusthick" title="Add Birthday" id="addBirthdayButton"></span></div>';
 		}
 		
 		postContentHtml += refreshHtml;
@@ -329,27 +333,15 @@ function showData(){
 
 		$('#addBirthdayButton').on('click', function(){
 			backgroundPage.ga('send', 'event', 'button', 'click', 'add birthday');
-
-			$('#overlay').show();
-			$('#overlay-form-div').show();
-			
-			$('#birthdayInput').datepicker({
-				showOtherMonths: true,
-				selectOtherMonths: true,
-			    changeMonth: true,
-			    changeYear: true
-			});
-		   
-			$('#overlay').on('click', function(){
-				$(this).hide();
-				$('#overlay-form-div').hide();
-			});
-
-			$('#cancelButton').on('click', function(){
-				$('#overlay').hide();
-				$('#overlay-form-div').hide();
-			});
+			showAddOverlay();
 		});		
+
+		if(sbr.validFeed && birthdaysArray.length == 0){
+			backgroundPage.ga('send', 'event', 'automatic', 'showData', 'empty spreadsheet', {
+				'nonInteraction' : true
+			});
+			showAddOverlay();
+		}
 
 	}
 	else{
@@ -360,6 +352,111 @@ function showData(){
 		sbr.requestAuth();
 		window.setTimeout(showData, 500);
 	}
+	
+}
+
+function showAddOverlay(){
+	var backgroundPage = chrome.extension.getBackgroundPage();
+	var sbr = backgroundPage.sbr;
+
+	$('#nameInput').val('');
+	$('#birthdayInput').val('');
+	$('#emailInput').val('');
+	$('#overlay').show();
+	$('#overlay-form-div').show();
+	
+	$('#birthdayInput').datepicker({
+		showOtherMonths: true,
+		selectOtherMonths: true,
+	    changeMonth: true,
+	    changeYear: true
+	});
+   
+	$('#overlay').on('click', function(){
+		backgroundPage.ga('send', 'event', 'button', 'click', 'cancel add birthday');
+		$(this).hide();
+		$('#overlay-form-div').hide();
+	});
+
+	$('#cancelButton').on('click', function(){
+		backgroundPage.ga('send', 'event', 'button', 'click', 'cancel add birthday');
+		$('#overlay').hide();
+		$('#overlay-form-div').hide();
+	});
+
+	$('#saveButton').on('click', function(){
+		backgroundPage.ga('send', 'event', 'button', 'click', 'save birthday');
+		
+		var nextRow = sbr.getBirthdaysSize() + 1;
+		var name = xmlEscape($('#nameInput').val().trim());
+		var birthday = xmlEscape($('#birthdayInput').val().trim());
+		var email = xmlEscape($('#emailInput').val().trim());
+		
+		var nameOk = false;
+		if(name !== ''){
+			nameOk = true;
+		}
+		
+		var dateOk = false;
+		if(birthday != '' && birthday.match(/\d{1,2}\/\d{1,2}\/\d{2,4}/)){
+			dateOk = true;
+		}
+		
+		if(nameOk && dateOk){
+			sbr.changeCell(nextRow, 1, birthday);
+			sbr.changeCell(nextRow, 2, name);
+			sbr.changeCell(nextRow, 3, email);
+
+			$('#save-spinner').show();
+			SAVE_RELOAD_COUNTER = 0;
+			window.setTimeout(saveComplete, 500);
+		}
+		else{
+			if(!nameOk){
+				$('#nameInput').css('border-color', 'red');
+			}
+
+			if(!dateOk){
+				$('#birthdayInput').css('border-color', 'red');
+			}
+		}
+	});	
+}
+
+function saveComplete(){
+	var backgroundPage = chrome.extension.getBackgroundPage();
+	var sbr = backgroundPage.sbr;
+
+	if(sbr.saveComplete){
+		backgroundPage.ga('send', 'event', 'automatic', 'saveComplete', 'success', {
+			'nonInteraction' : true
+		});
+		
+		$('#overlay').hide();
+		$('#overlay-form-div').hide();
+		$('#save-spinner').hide();
+		
+		sbr.loadSpreadsheet();
+		window.setTimeout(showData, 500);
+	}
+	else{
+		SAVE_RELOAD_COUNTER++;
+		
+		if(SAVE_RELOAD_COUNTER < 10){
+			window.setTimeout(saveComplete, 500);
+		}
+		else{
+			chrome.runtime.reload();
+		}
+	}
+}
+
+function xmlEscape(unsafe){
+	return unsafe
+	    .replace(/&/g, "&amp;")
+	    .replace(/</g, "&lt;")
+	    .replace(/>/g, "&gt;")
+	    .replace(/"/g, "&quot;");
 }
 
 /**

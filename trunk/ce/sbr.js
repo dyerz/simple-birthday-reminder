@@ -230,6 +230,10 @@ SimpleBirthdayReminder.prototype.spreadsheetCells = function (JSON_response, tar
 		for (var i = 0; i < cellsObj.feed.entry.length; i++) {
 			var cellTitle = cellsObj.feed.entry[i].title['$t'];
 			var cellContent = cellsObj.feed.entry[i].content['$t'];
+			
+			if(cellContent == ''){
+				continue;
+			}
 
 			var thisRow = cellTitle.substr(1);
 			if (!(thisRow in self.birthdaysObject)) {
@@ -360,6 +364,88 @@ SimpleBirthdayReminder.prototype.downloadFile = function(targetUrl, callback){
 	}
 }
 
+
+SimpleBirthdayReminder.prototype.changeCell = function(row, column, value){
+	self.saveComplete = false;
+	
+	var worksheetUrl = localStorage['worksheet_url'];
+	var rowCol = 'R' + row + 'C' + column;
+	
+	if(worksheetUrl){
+		worksheetUrl = worksheetUrl.replace('basic?alt=json', 'full/') + rowCol;
+	
+		var xml = self.buildXML(worksheetUrl, row, column, value);
+		
+		if(xml){
+			self.putChange(worksheetUrl, xml, self.changeStatus)
+		}
+		else{
+			alert('fail');
+		}
+	}
+	else{
+		alert('not possible');
+	}
+	
+}
+
+SimpleBirthdayReminder.prototype.changeStatus = function(responseText){
+	self.saveComplete = true;
+}
+
+SimpleBirthdayReminder.prototype.buildXML = function(worksheetUrl, row, column, value){
+	var xml = null;
+	var worksheetUrl = localStorage['worksheet_url'];
+	var rowCol = 'R' + row + 'C' + column;
+	
+	if(worksheetUrl){
+		worksheetUrl = worksheetUrl.replace('basic?alt=json', 'full/')
+		
+		xml = '<entry xmlns="http://www.w3.org/2005/Atom" xmlns:gs="http://schemas.google.com/spreadsheets/2006">';
+		xml += '<id>' + worksheetUrl + '</id>';
+		xml += '<link rel="edit" type="application/atom+xml" href="' + worksheetUrl + '"/>';
+		xml += '<gs:cell row="' + row + '" col="' + column + '" inputValue="' + value + '"/>';
+		xml += '</entry>';
+	}
+
+	return xml;
+}
+
+
+SimpleBirthdayReminder.prototype.putChange = function(targetUrl, xml, callback){
+	if (targetUrl) {
+		var authToken = gapi.auth.getToken()
+		if(authToken){
+			var accessToken = authToken.access_token;
+			var xhr = new XMLHttpRequest();
+			xhr.open('PUT', targetUrl);
+			xhr.setRequestHeader('GData-Version', '3.0');
+			
+			// To override the versioning system and update the entry regardless 
+			// of whether someone else has updated it since you retrieved it, 
+			// use If-Match: * instead of specifying the ETag in the header.
+			// https://developers.google.com/gdata/docs/2.0/reference
+			xhr.setRequestHeader('If-Match', '*');
+			xhr.setRequestHeader('Content-Type','application/atom+xml');
+			xhr.setRequestHeader('Authorization', 'Bearer ' + accessToken);
+			xhr.onload = function(){
+				callback(xhr.responseText, targetUrl);
+			};
+			xhr.onerror = function(){
+				callback(null);
+			};
+			xhr.send(xml);
+			
+		}
+		else {
+			callback(null);
+		}
+	}
+	else {
+		callback(null);
+	}
+}
+
 /**
  * Retrieve a list of File resources.
  * 
@@ -485,4 +571,12 @@ SimpleBirthdayReminder.prototype.calculateDaysAway = function(fromDate, toDate){
 SimpleBirthdayReminder.prototype.calculateDayOfYear = function(dayDate){
 	var oneJan = new Date(dayDate.getFullYear(), 0, 1);
 	return Math.ceil((dayDate - oneJan) / MILLISECONDS_IN_DAY);
+}
+
+SimpleBirthdayReminder.prototype.getBirthdaysSize = function(dayDate){
+	var length = 0;
+    for( var key in self.birthdaysObject ) {
+        ++length;
+    }
+    return length;	
 }
