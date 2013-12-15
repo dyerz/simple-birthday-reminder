@@ -8,6 +8,7 @@
 	<script type="text/javascript" src="js/dragtable.js"></script>
 	<script type="text/javascript" src="https://apis.google.com/js/client.js?onload=handleClientLoad"></script>
 
+	<link rel="stylesheet" href="css/jquery-ui.css" >
 	<link rel="stylesheet" href="styles.css" >
 </head>
 <body>
@@ -17,5 +18,21 @@
 	</div>
 	<div id="content"></div>
 	<div id="post-content"></div>
+	<div id="overlay-form-div" class="overlay-form-div" style="display: none;">
+	<table class="noborder">
+	<tr><td style="width: 80px; text-align: right;">Name:</td><td><input style="width: 100%;" type="text" id="nameInput" /></td></tr>
+	<tr>
+		<td style="text-align: right;">Birthday:</td>
+		<td><input style="width: 100%;" type="text" id="birthdayInput" placeholder="Click to select date"/></td>
+	</tr>
+	<tr><td style="text-align: right;">E-Mail:</td><td><input style="width: 100%;" type="text" id="emailInput" placeholder="Optional" /></td></tr>
+	<tr><td colspan="2" style="text-align: center;">
+		<input type="button" value="Cancel" id="cancelButton" />
+		<input type="button" value="Save" id="saveButton"/>
+	</td></tr>
+	</table>
+	</div>
+	<div id="overlay" class="overlay" style="display: none;">
+	</div>
 </body>
 </html>

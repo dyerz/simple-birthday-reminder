@@ -3,7 +3,10 @@ window.setTimeout(optionsLoad, 1);
 function optionsLoad(){
 	var backgroundPage = chrome.extension.getBackgroundPage();
 	
-	backgroundPage.ga('send', 'pageview');
+	backgroundPage.ga('send', 'pageview', {
+		'page': '/options.html',
+		'title': 'Options'
+	});
 	
 	var iconBadgeColor = localStorage['iconBadgecColor'];
 	
@@ -19,4 +22,22 @@ function optionsLoad(){
 	    	chrome.browserAction.setBadgeBackgroundColor({color: newColorString});
 	    }
 	});	
+	
+	$("#clearSettings").on('click', function(){
+		delete localStorage['iconBadgecColor'];
+		
+		delete localStorage['worksheet_url'];
+		delete localStorage['stored_spreadsheet'];
+		
+		if(localStorage['backgroundTimeout']){
+			backgroundPage.window.clearTimeout(parseInt(localStorage['backgroundTimeout']));
+			delete localStorage['backgroundTimeout'];
+		}
+
+		chrome.runtime.reload();
+//		var id = chrome.i18n.getMessage("@@extension_id");
+//	    chrome.management.setEnabled(id, false, function() {
+//	        chrome.management.setEnabled(id, true);
+//	    });
+	});
 }

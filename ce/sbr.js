@@ -29,6 +29,9 @@ SimpleBirthdayReminder = function(){
 	self.birthdaysObject = {};
 	self.birthdayTodayCount = 0;
 	
+	// row object with cell objects
+	// '1': {'A': 'x', ...}
+	self.spreadsheetObject = {};
 }
 
 SimpleBirthdayReminder.prototype.load = function(){
@@ -209,6 +212,7 @@ SimpleBirthdayReminder.prototype.spreadsheetCells = function (JSON_response, tar
 	}
 	
 	var iconTitle = '';
+	self.errorMessage = null;
 
 	if (cellsObj.feed.entry) {
 		for (var i = 0; i < cellsObj.feed.entry.length; i++) {
@@ -227,10 +231,17 @@ SimpleBirthdayReminder.prototype.spreadsheetCells = function (JSON_response, tar
 					'name': ''
 				};
 			}
+			
+			if(!(thisRow in self.spreadsheetObject)){
+				self.spreadsheetObject[thisRow] = {}
+			}
+
+			self.spreadsheetObject[thisRow][cellTitle[0]] = cellContent;
 
 			switch (cellTitle[0]) {
 				case 'A':
 					if(cellContent.match(/\d{1,2}\/\d{1,2}\/\d{2,4}/)){
+						
 						var cellDate = $.datepicker.parseDate('mm/dd/yy', cellContent);
 						var cellDateString = $.datepicker.formatDate( "mm/dd/yy", cellDate );
 
@@ -248,7 +259,7 @@ SimpleBirthdayReminder.prototype.spreadsheetCells = function (JSON_response, tar
 						}
 					}
 					else{
-						tableHtml += '<br />Please put the date in the first column.';
+						self.errorMessage = 'Please put the date in the first column.';
 						self.validFeed = false;
 					}
 					

@@ -15,7 +15,10 @@ function addScript(src){
 }
 
 function beginBackgroundUpdate(){
-	ga('send', 'pageview');
+	ga('send', 'pageview', {
+		'page': '/background.html',
+		'title': 'Background'
+	});
 
 	
 	var iconBadgeColor = localStorage['iconBadgecColor'];
