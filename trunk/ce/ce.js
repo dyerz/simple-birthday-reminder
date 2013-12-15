@@ -9,7 +9,10 @@ function checkAuth(){
 	var backgroundPage = chrome.extension.getBackgroundPage();
 	var sbr = backgroundPage.sbr;
 	
-	backgroundPage.ga('send', 'pageview');
+	backgroundPage.ga('send', 'pageview', {
+		'page': '/popup.html',
+		'title': 'Popup'
+	});
 
 	if(sbr.authorized){
 		if(sbr.apiOk){
@@ -130,6 +133,7 @@ function showList(result){
 	$('#content').html(contentHtml);
 
 	$('#fileLister').on('change', function(evt){
+		delete localStorage['worksheet_url'];
 		localStorage['stored_spreadsheet'] = evt.target.value;
 
 		sbr.loadSpreadsheet();
@@ -244,12 +248,20 @@ function showData(){
 				tableHtml = 'Spreadsheet contains no data.';
 			}
 		}
+		else if(sbr.errorMessage){
+			tableHtml = sbr.errorMessage
+		}
 
 		var postContentHtml = '<input type="button" value="Change Spreadsheet" id="changeSpreadsheetButton" />';
 		
 		var spreadsheetUrl = sbr.spreadsheetUrl;
 		if(spreadsheetUrl){
 			postContentHtml += '<input type="button" value="Edit Spreadsheet" id="viewSpreadsheetButton" />';
+		}
+		
+		var worksheetUrl = localStorage['worksheet_url']
+		if(worksheetUrl){
+			postContentHtml += '<input type="button" value="Add Birthday" id="addBirthdayButton" />';
 		}
 		
 		postContentHtml += refreshHtml;
@@ -287,6 +299,31 @@ function showData(){
 			
 			sbr.retrieveAllFiles(showList);
 		});		
+
+		$('#addBirthdayButton').on('click', function(){
+			backgroundPage.ga('send', 'event', 'button', 'click', 'add birthday');
+
+			$('#overlay').show();
+			$('#overlay-form-div').show();
+			
+			$('#birthdayInput').datepicker({
+				showOtherMonths: true,
+				selectOtherMonths: true,
+			    changeMonth: true,
+			    changeYear: true
+			});
+		   
+			$('#overlay').on('click', function(){
+				$(this).hide();
+				$('#overlay-form-div').hide();
+			});
+
+			$('#cancelButton').on('click', function(){
+				$('#overlay').hide();
+				$('#overlay-form-div').hide();
+			});
+		});		
+
 	}
 	else{
 		if(localStorage['backgroundTimeout']){
