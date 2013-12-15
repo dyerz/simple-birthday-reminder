@@ -26,8 +26,15 @@ SimpleBirthdayReminder = function(){
 	self.updateComplete = false;
 	self.validFeed = true;
 	
+	self.settingDaysAway = 14;
+	if(!localStorage['pastDays']){
+		localStorage['pastDays'] = '' + self.settingDaysAway;
+	}
+	
 	self.birthdaysObject = {};
 	self.birthdayTodayCount = 0;
+	
+	self.clickCount = {}
 	
 	// row object with cell objects
 	// '1': {'A': 'x', ...}
@@ -199,7 +206,9 @@ SimpleBirthdayReminder.prototype.spreadsheetCells = function (JSON_response, tar
 		'nonInteraction' : true
 	});
 
-	var todayString = $.datepicker.formatDate("mm/dd", new Date());
+	var nowDate = new Date();
+
+	var todayString = $.datepicker.formatDate("mm/dd", nowDate);
 	self.birthdayTodayCount = 0;
 
 	var cellsObj = {'feed': null};
@@ -213,6 +222,9 @@ SimpleBirthdayReminder.prototype.spreadsheetCells = function (JSON_response, tar
 	
 	var iconTitle = '';
 	self.errorMessage = null;
+	
+	self.settingDaysAway = parseInt(localStorage['pastDays'])
+	var daysAwayDate = new Date(new Date().setDate(nowDate.getDate() - self.settingDaysAway));
 
 	if (cellsObj.feed.entry) {
 		for (var i = 0; i < cellsObj.feed.entry.length; i++) {
@@ -255,8 +267,10 @@ SimpleBirthdayReminder.prototype.spreadsheetCells = function (JSON_response, tar
 							self.birthdaysObject[thisRow]['today'] = true;
 						}
 						else{
-							self.birthdaysObject[thisRow]['days-away'] = self.calculateDaysAway(cellDate);
+							self.birthdaysObject[thisRow]['days-away'] = self.calculateDaysAway(nowDate, cellDate);
 						}
+						
+						self.birthdaysObject[thisRow]['setting-days-away'] = self.calculateDaysAway(daysAwayDate, cellDate);
 					}
 					else{
 						self.errorMessage = 'Please put the date in the first column.';
@@ -447,19 +461,18 @@ SimpleBirthdayReminder.prototype.calculateAge = function(dataDate){
  *            dataDate Date of birth.
  * 
  */
-SimpleBirthdayReminder.prototype.calculateDaysAway = function(dataDate){
-	var nowDate = new Date();
-	var nowDayOfYear = self.calculateDayOfYear(nowDate);
-	var dataDayOfYear = self.calculateDayOfYear(dataDate);
+SimpleBirthdayReminder.prototype.calculateDaysAway = function(fromDate, toDate){
+	var nowDayOfYear = self.calculateDayOfYear(fromDate);
+	var dataDayOfYear = self.calculateDayOfYear(toDate);
 
-	var nextYear = nowDate.getFullYear();
-	dataDate.setFullYear(nextYear);
+	var nextYear = fromDate.getFullYear();
+	toDate.setFullYear(nextYear);
 
 	if (nowDayOfYear > dataDayOfYear) {
-		dataDate.setFullYear(nextYear + 1);
+		toDate.setFullYear(nextYear + 1);
 	}
 
-	return Math.ceil((dataDate - nowDate) / MILLISECONDS_IN_DAY);
+	return Math.ceil((toDate - fromDate) / MILLISECONDS_IN_DAY);
 }
 
 /**

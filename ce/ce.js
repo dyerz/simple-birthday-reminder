@@ -1,3 +1,5 @@
+var FIRST_DATE = 1;
+
 /**
  * Called when the client library is loaded to start the auth flow.
  */
@@ -181,6 +183,8 @@ function showData(){
 	var backgroundPage = chrome.extension.getBackgroundPage();
 	var sbr = backgroundPage.sbr;
 	
+	var birthdaysArray = [];
+	
 	if(sbr.updateComplete){
 		$('#pre-content').hide();
 		$('#refresh-spinner').hide();
@@ -188,8 +192,6 @@ function showData(){
 		var tableHtml = 'Problem retrieving the spreadsheet data.';
 		
 		var refreshHtml = '';
-
-		var birthdaysArray = [];
 
 		if(sbr.validFeed){
 			for ( var key in sbr.birthdaysObject) {
@@ -207,11 +209,13 @@ function showData(){
 						'age': '',
 						'day-of-year': sbr.calculateDayOfYear(todayDate),
 						'days-away': '',
+						'setting-days-away': sbr.settingDaysAway,
 						'name': 'Today'
 					});
 				}
 				
-				birthdaysArray = birthdaysArray.sort(sortByDayOfYear);
+				FIRST_DATE = sbr.calculateDayOfYear(new Date());
+				birthdaysArray = birthdaysArray.sort(sortBySettingDaysAway);
 
 				tableHtml = '<table class="draggable" id="content-table">';
 				tableHtml += '<thead><tr><th>Date</th><th>Name</th><th>Age</th><th>Days Away</th><th>Email</th></tr></thead>';
@@ -232,7 +236,7 @@ function showData(){
 
 					var email_html = '&nbsp;';
 					if ('e-mail' in birthdaysArray[i]) {
-						email_html = '<a href="mailto:' + birthdaysArray[i]['e-mail'] + '">Send Email</a>';
+						email_html = '<span id="email_' + i + '" class="ui-icon ui-icon-mail-closed" title="Send Email"></span>';
 					}
 
 					tableHtml += '<td>' + email_html + '</td>';
@@ -298,7 +302,30 @@ function showData(){
 			$('#post-content').html('');
 			
 			sbr.retrieveAllFiles(showList);
-		});		
+		});	
+		
+		$('.ui-icon-mail-closed').each(function(){
+			var rowId = parseInt(this.id.split('_')[1]);
+			sbr.clickCount[rowId] = 0;
+			
+			$(this).on('click', function(){
+				sbr.clickCount[rowId]++;
+				
+				if(sbr.clickCount[rowId] > 3){
+					if(confirm('Were you able to send an e-mail?')){
+						
+					}
+				}
+				else{
+					if(rowId < birthdaysArray.length){
+						var email = birthdaysArray[rowId]['e-mail'];
+						var mailUrl = 'mailto:' + email + '?subject=Happy Birthday';
+							
+						chrome.tabs.create({ url: mailUrl });
+					}
+				}
+			});
+		});
 
 		$('#addBirthdayButton').on('click', function(){
 			backgroundPage.ga('send', 'event', 'button', 'click', 'add birthday');
@@ -349,6 +376,27 @@ function sortByDayOfYear(a, b){
 		return -1;
 	}
 	else if (a['day-of-year'] > b['day-of-year']) {
+		return 1;
+	}
+	else {
+		return 0;
+	}
+}
+
+/**
+ * Function to sort an array by the day-of-year field
+ * 
+ * @param {Object}
+ *            a birthday Object.
+ * @param {Object}
+ *            b birthday Object.
+ * 
+ */
+function sortBySettingDaysAway(a, b){
+	if (a['setting-days-away'] < b['setting-days-away']) {
+		return -1;
+	}
+	else if (a['setting-days-away'] > b['setting-days-away']) {
 		return 1;
 	}
 	else {
