@@ -13,9 +13,16 @@
 <div style="width: 400px; margin: 0 auto; border: 1px solid black;">
 <h3>Options</h3>
 <form>
+<label>Show the past <select id="pastDays">
+<option value="0">0</option>
+<option value="7">7</option>
+<option value="14">14</option>
+<option value="30">30</option>
+</select> days of birthdays.</label>
+<br />
 <label>Icon Badge Color: <input type='text' id="iconBadgeColor" /></label>
 <br />
-<label>Clear Settings: <input type='button' id="clearSettings" value="Go" /></label>
+<label><input type='button' id="clearSettings" value="Clear Settings" /></label>
 </form>
 <p>More options coming soon.</p>
 </div>

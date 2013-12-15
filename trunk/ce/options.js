@@ -23,6 +23,13 @@ function optionsLoad(){
 	    }
 	});	
 	
+	$("#pastDays").val(localStorage['pastDays']).prop('selected', true);
+
+	$("#pastDays").on('change', function(){
+		localStorage['pastDays'] = this.value;
+	});
+
+	
 	$("#clearSettings").on('click', function(){
 		delete localStorage['iconBadgecColor'];
 		
