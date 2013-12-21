@@ -209,7 +209,10 @@ SimpleBirthdayReminder.prototype.spreadsheetCells = function (JSON_response, tar
 	var nowDate = new Date();
 
 	var todayString = $.datepicker.formatDate("mm/dd", nowDate);
+	
 	self.birthdayTodayCount = 0;
+	delete self.birthdaysObject;
+	self.birthdaysObject = {};
 
 	var cellsObj = {'feed': null};
 	
@@ -221,6 +224,7 @@ SimpleBirthdayReminder.prototype.spreadsheetCells = function (JSON_response, tar
 	}
 	
 	var iconTitle = '';
+	var upcomingBirthdays = []
 	self.errorMessage = null;
 	
 	self.settingDaysAway = parseInt(localStorage['pastDays'])
@@ -238,6 +242,7 @@ SimpleBirthdayReminder.prototype.spreadsheetCells = function (JSON_response, tar
 			var thisRow = cellTitle.substr(1);
 			if (!(thisRow in self.birthdaysObject)) {
 				self.birthdaysObject[thisRow] = {
+					'row': thisRow,
 					'today': false,
 					'date': null,
 					'date-str': '',
@@ -267,8 +272,9 @@ SimpleBirthdayReminder.prototype.spreadsheetCells = function (JSON_response, tar
 						self.birthdaysObject[thisRow]['day-of-year'] = self.calculateDayOfYear(cellDate);
 						
 						if(cellDateString.substr(0, 5) == todayString){
-							self.birthdayTodayCount++;
+							self.birthdaysObject[thisRow]['days-away'] = '';
 							self.birthdaysObject[thisRow]['today'] = true;
+							self.birthdayTodayCount++;
 						}
 						else{
 							self.birthdaysObject[thisRow]['days-away'] = self.calculateDaysAway(nowDate, cellDate);
@@ -285,11 +291,8 @@ SimpleBirthdayReminder.prototype.spreadsheetCells = function (JSON_response, tar
 				case 'B':
 					self.birthdaysObject[thisRow]['name'] = cellContent;
 					
-					if(self.birthdaysObject[thisRow]['today']){
-						if(iconTitle == ''){
-							iconTitle += 'Today\'s Birthdays:'
-						}
-						iconTitle += '\n' + cellContent;
+					if(self.birthdaysObject[thisRow]['days-away'] <= self.settingDaysAway){
+						upcomingBirthdays.push(self.birthdaysObject[thisRow]['date-str'] + ': ' + cellContent)
 					}
 					
 					break;
@@ -313,10 +316,12 @@ SimpleBirthdayReminder.prototype.spreadsheetCells = function (JSON_response, tar
 	}
 	
 	chrome.browserAction.setBadgeText({
-		text : self.birthdayTodayCount + ''
+		text : upcomingBirthdays.length + ''
 	});
 
-	if(iconTitle != ''){
+	if(upcomingBirthdays.length > 0){
+		iconTitle = 'Upcoming Birthdays\n';
+		iconTitle += upcomingBirthdays.sort().join('\n');
 		chrome.browserAction.setTitle({
 			title : iconTitle
 		});
@@ -537,7 +542,12 @@ SimpleBirthdayReminder.prototype.insertFile = function(docTitle, callback){
  */
 SimpleBirthdayReminder.prototype.calculateAge = function(dataDate){
 	var nowDate = new Date();
-	return nowDate.getFullYear() - dataDate.getFullYear();
+	var age = nowDate.getFullYear() - dataDate.getFullYear();
+	if(age < 0){
+		age = '';
+	}
+	
+	return age; 
 }
 
 /**

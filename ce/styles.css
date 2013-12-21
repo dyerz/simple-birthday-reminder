@@ -31,6 +31,26 @@ th, td{
 	padding: 2px 8px;
 }
 
+#content-table{
+	table-layout: fixed;
+}
+
+.dateColumn{
+	width: 100px;
+}
+
+.ageColumn{
+	width: 40px;
+}
+
+.daysAwayColumn{
+	width: 95px;
+}
+
+.actionsColumn{
+	width: 60px;
+}
+
 .centered{
 	text-align: center;
 }
@@ -110,4 +130,11 @@ h2:after {
 
 div.ui-datepicker {
 	font-size: 62.5%;
+}
+
+#amazonIcon{
+	display: inline;
+	height: 16px;
+	width: 16px;
+	cursor: pointer;
 }

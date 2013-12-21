@@ -217,8 +217,12 @@ function showData(){
 				FIRST_DATE = sbr.calculateDayOfYear(new Date());
 				birthdaysArray = birthdaysArray.sort(sortBySettingDaysAway);
 
-				tableHtml = '<table class="draggable" id="content-table">';
-				tableHtml += '<thead><tr><th>Date</th><th>Name</th><th>Age</th><th>Days Away</th><th>Email</th></tr></thead>';
+				tableHtml = '<table class="draggable" id="content-table"><thead><tr>';
+				tableHtml += '<th class="dateColumn">Date</th>';
+				tableHtml += '<th class="nameColumn">Name</th>';
+				tableHtml += '<th class="ageColumn">Age</th>';
+				tableHtml += '<th class="daysAwayColumn">Days Away</th>';
+				tableHtml += '<th class="actionsColumn">Actions</th></tr></thead>';
 				for (var i = 0; i < birthdaysArray.length; i++) {
 					
 					var todayClass = '';
@@ -234,9 +238,18 @@ function showData(){
 					tableHtml += '<td class="centered">' + birthdaysArray[i]['age'] + '</td>';
 					tableHtml += '<td class="centered">' + birthdaysArray[i]['days-away'] + '</td>';
 
-					var email_html = '&nbsp;';
+					var email_html = '';
+					
+					if(birthdaysArray[i]['setting-days-away'] <= 2 * localStorage['pastDays'] && birthdaysArray[i]['days-away'] != ''){
+						email_html += '<img src="amazon.ico" title="Send an Amazon Gift Card" id="amazonIcon" />';
+					}
+					
 					if ('e-mail' in birthdaysArray[i]) {
-						email_html = '<span id="email_' + i + '" class="ui-icon ui-icon-mail-closed" title="Send Email"></span>';
+						email_html += ' <div class="icon-wrapper"><span id="email_' + i + '" class="ui-icon ui-icon-mail-closed" title="Send Email"></span></div>';
+					}
+					
+					if(birthdaysArray[i]['name'] !== 'Today'){
+						email_html += '<div class="icon-wrapper" style="float: right;"><span id="edit_' + birthdaysArray[i]['row'] + '" class="ui-icon ui-icon-pencil" title="Edit Details"></span></div>';
 					}
 
 					tableHtml += '<td>' + email_html + '</td>';
@@ -245,8 +258,7 @@ function showData(){
 				}
 				tableHtml += '<table>';			
 
-//				refreshHtml = '<input type="button" value="Refresh" id="refreshTableButton" />';
-				refreshHtml += '<div class="icon-wrapper ui-state-default"><span class="ui-icon ui-icon-refresh" title="Refresh Data" id="refreshTableButton"></span></div>';
+				refreshHtml += '<div class="icon-wrapper"><span class="ui-icon ui-icon-refresh" title="Refresh Data" id="refreshTableButton"></span></div>';
 				refreshHtml += '<img id="refresh-spinner" class="hidden" src="ajax-loader.gif" />';
 			}
 			else{
@@ -257,19 +269,16 @@ function showData(){
 			tableHtml = sbr.errorMessage
 		}
 
-//		var postContentHtml = '<input type="button" value="Change Spreadsheet" id="changeSpreadsheetButton" />';
-		var postContentHtml = '<div class="icon-wrapper ui-state-default"><span class="ui-icon ui-icon-transferthick-e-w" title="Change Spreadsheet" id="changeSpreadsheetButton"></span></div>';
+		var postContentHtml = '<div class="icon-wrapper"><span class="ui-icon ui-icon-transferthick-e-w" title="Change Spreadsheet" id="changeSpreadsheetButton"></span></div>';
 		
 		var spreadsheetUrl = sbr.spreadsheetUrl;
 		if(spreadsheetUrl){
-//			postContentHtml += '<input type="button" value="Edit Spreadsheet" id="viewSpreadsheetButton" />';
-			postContentHtml += '<div class="icon-wrapper ui-state-default"><span class="ui-icon ui-icon-document" title="Edit Spreadsheet" id="viewSpreadsheetButton"></span></div>';
+			postContentHtml += '<div class="icon-wrapper"><span class="ui-icon ui-icon-document" title="Edit Spreadsheet" id="viewSpreadsheetButton"></span></div>';
 		}
 		
 		var worksheetUrl = localStorage['worksheet_url']
 		if(worksheetUrl){
-//			postContentHtml += '<input type="button" value="Add Birthday" id="addBirthdayButton" />';
-			postContentHtml += '<div class="icon-wrapper ui-state-default"><span class="ui-icon ui-icon-plusthick" title="Add Birthday" id="addBirthdayButton"></span></div>';
+			postContentHtml += '<div class="icon-wrapper"><span class="ui-icon ui-icon-plusthick" title="Add Birthday" id="addBirthdayButton"></span></div>';
 		}
 		
 		postContentHtml += refreshHtml;
@@ -331,16 +340,30 @@ function showData(){
 			});
 		});
 
+		$('#amazonIcon').on('click', function(){
+			backgroundPage.ga('send', 'event', 'button', 'click', 'send amazon');
+			var amazonUrl = 'http://www.amazon.com/gp/product/B004LLIKVU/ref=as_li_tf_tl?ie=UTF8&camp=1789&creative=9325&creativeASIN=B004LLIKVU&linkCode=as2&tag=simpbirtremi-20';
+			
+			chrome.tabs.create({ url: amazonUrl });
+		});		
+
+		$('.ui-icon-pencil').each(function(){
+			$(this).on('click', function(){
+				var rowKey = this.id.split('_')[1];
+				showAddOverlay(parseInt(rowKey));
+			});
+		});		
+		
 		$('#addBirthdayButton').on('click', function(){
 			backgroundPage.ga('send', 'event', 'button', 'click', 'add birthday');
-			showAddOverlay();
+			showAddOverlay(null);
 		});		
 
 		if(sbr.validFeed && birthdaysArray.length == 0){
 			backgroundPage.ga('send', 'event', 'automatic', 'showData', 'empty spreadsheet', {
 				'nonInteraction' : true
 			});
-			showAddOverlay();
+			showAddOverlay(null);
 		}
 
 	}
@@ -355,13 +378,31 @@ function showData(){
 	
 }
 
-function showAddOverlay(){
+function showAddOverlay(rowKey){
 	var backgroundPage = chrome.extension.getBackgroundPage();
 	var sbr = backgroundPage.sbr;
+	
+	var buttonRowHtml = '<input type="button" value="Cancel" id="cancelButton" />';
+	buttonRowHtml += '<input type="button" value="Save" id="saveButton"/> <img id="save-spinner" src="ajax-loader.gif" class="hidden" />';
 
-	$('#nameInput').val('');
-	$('#birthdayInput').val('');
-	$('#emailInput').val('');
+	$('#buttonRow').html(buttonRowHtml);
+	
+	var nameVal = '';
+	var birthdayVal = '';
+	var emailVal = '';
+	var nextRow = sbr.getBirthdaysSize() + 1;
+
+	if(rowKey){
+		nameVal = sbr.birthdaysObject[rowKey]['name'];
+		birthdayVal = sbr.birthdaysObject[rowKey]['date-str'];
+		emailVal = sbr.birthdaysObject[rowKey]['email'];
+		nextRow = rowKey;
+	}
+
+	$('#nameInput').val(nameVal);
+	$('#birthdayInput').val(birthdayVal);
+	$('#emailInput').val(emailVal);
+//	$('#rowKey').html(rowKey);
 	$('#overlay').show();
 	$('#overlay-form-div').show();
 	
@@ -373,7 +414,7 @@ function showAddOverlay(){
 	});
    
 	$('#overlay').on('click', function(){
-		backgroundPage.ga('send', 'event', 'button', 'click', 'cancel add birthday');
+		backgroundPage.ga('send', 'event', 'overlay', 'click', 'cancel add birthday');
 		$(this).hide();
 		$('#overlay-form-div').hide();
 	});
@@ -387,7 +428,6 @@ function showAddOverlay(){
 	$('#saveButton').on('click', function(){
 		backgroundPage.ga('send', 'event', 'button', 'click', 'save birthday');
 		
-		var nextRow = sbr.getBirthdaysSize() + 1;
 		var name = xmlEscape($('#nameInput').val().trim());
 		var birthday = xmlEscape($('#birthdayInput').val().trim());
 		var email = xmlEscape($('#emailInput').val().trim());
