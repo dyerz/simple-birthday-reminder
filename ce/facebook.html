@@ -16,10 +16,10 @@
 <div id="fb-root"></div>
 	<script type="text/javascript">
 	// The ID of the extension we want to talk to.
-	var editorExtensionId = "abcdefghijklmnoabcdefhijklmnoabc";
+	var editorExtensionId = "jghfdcpjihdllimebedhfoibipfhghbi";
 
 	// Make a simple request:
-	chrome.runtime.sendMessage(jghfdcpjihdllimebedhfoibipfhghbi, {},
+	chrome.runtime.sendMessage(editorExtensionId, {openUrlInEditor: url},
 	  function(response) {
 	    if(response.success){
 	    	var FB = response.FB;
