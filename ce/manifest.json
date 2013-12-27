@@ -9,6 +9,9 @@
   "permissions": [
     "https://*.google.com/"
   ],
+  "externally_connectable": {
+  	"matches": ["*://simple-birthday-reminder.googlecode.com/*"]
+  },
   "browser_action": {
     "default_icon": "icon128.png",
     "default_popup": "popup.html"

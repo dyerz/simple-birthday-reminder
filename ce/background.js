@@ -35,3 +35,10 @@ function beginBackgroundUpdate(){
 	
 	sbr.requestGoogleAuth();
 }
+
+chrome.runtime.onMessageExternal.addListener(
+		function(request, sender, sendResponse) {
+			var backgroundPage = chrome.extension.getBackgroundPage();
+			var FB = backgroundPage.FB;
+			return  FB;
+});

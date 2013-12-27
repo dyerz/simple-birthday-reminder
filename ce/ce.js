@@ -83,22 +83,25 @@ function checkAuth(){
 		$('#authorizeFacebookButton').on('click', function(){
 			backgroundPage.ga('send', 'event', 'button', 'click', 'facebook authorization');
 
-			//FB.login(checkFacebookLoginStatus, {scope:'friends_birthday'});
-			var scope = 'friends_birthday'
-			var url = "https://graph.facebook.com/oauth/authorize?client_id=" + backgroundPage.FB_APP_ID + "&redirect_uri=http://simple-birthday-reminder.googlecode.com/svn/trunk/sbrjs/facebook.html&type=user_agent&display=page&scope=" + scope;
-			window.open(url, 'checkFacebookLoginStatus');			
+			var facebookUrl = "http://simple-birthday-reminder.googlecode.com/svn/trunk/ce/facebook.html"
+			chrome.tabs.create({ url: facebookUrl });
 			
-			$('#pre-content').hide();
-			$('#content').html('Click Continue after closing the authorization window.<br /><input type="button" id="continueButton" value="Continue" />');
-
-			$('#continueButton').on('click', function(){
-				backgroundPage.ga('send', 'event', 'button', 'click', 'facebook authorization continue');
-
-				$('#pre-content').show();
-				$('#content').html('');
-				sbr.requestGoogleAuth();
-				window.setTimeout(checkAuth, 500);
-			});
+			//FB.login(checkFacebookLoginStatus, {scope:'friends_birthday'});
+//			var scope = 'friends_birthday'
+//			var url = "https://graph.facebook.com/oauth/authorize?client_id=" + backgroundPage.FB_APP_ID + "&redirect_uri=&type=user_agent&display=page&scope=" + scope;
+//			window.open(url, 'checkFacebookLoginStatus');			
+//			
+//			$('#pre-content').hide();
+//			$('#content').html('Click Continue after closing the authorization window.<br /><input type="button" id="continueButton" value="Continue" />');
+//
+//			$('#continueButton').on('click', function(){
+//				backgroundPage.ga('send', 'event', 'button', 'click', 'facebook authorization continue');
+//
+//				$('#pre-content').show();
+//				$('#content').html('');
+//				sbr.requestGoogleAuth();
+//				window.setTimeout(checkAuth, 500);
+//			});
 		});
 		
 	}
