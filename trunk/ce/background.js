@@ -33,5 +33,5 @@ function beginBackgroundUpdate(){
 		text : '?'
 	});
 	
-	sbr.requestAuth();
+	sbr.requestGoogleAuth();
 }

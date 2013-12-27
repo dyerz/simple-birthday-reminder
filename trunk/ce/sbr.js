@@ -1,7 +1,17 @@
 var MILLISECONDS_IN_HOUR = 3600000;
 var MILLISECONDS_IN_DAY = 86400000;
 
+var FB_APP_ID = '1445031395711238'
+
 var self = null;
+
+// Initialize the Facebook JavaScript SDK
+FB.init({
+  appId: FB_APP_ID,
+  xfbml: true,
+  status: true,
+  cookie: true,
+});
 
 SimpleBirthdayReminder = function(){
 	self = this;
@@ -21,7 +31,7 @@ SimpleBirthdayReminder = function(){
 	
 	self.statusText = '';
 	
-	self.authorized = false;
+	self.googleAuthorized = false;
 	self.apiOk = false;
 	self.updateComplete = false;
 	self.validFeed = true;
@@ -46,14 +56,14 @@ SimpleBirthdayReminder.prototype.load = function(){
 }
 
 /**
- * Check if the current user has authorized the application.
+ * Check if the current user has googleAuthorized the application.
  */
-SimpleBirthdayReminder.prototype.requestAuth = function(){
+SimpleBirthdayReminder.prototype.requestGoogleAuth = function(){
 	gapi.auth.authorize({
 		'client_id' : self.clientId,
 		'scope' : self.scopes,
 		'immediate' : true
-	}, self.handleAuthResult);
+	}, self.handleGoogleAuthResult);
 }
 
 /**
@@ -62,13 +72,13 @@ SimpleBirthdayReminder.prototype.requestAuth = function(){
  * @param {Object}
  *            authResult Authorization result.
  */
-SimpleBirthdayReminder.prototype.handleAuthResult = function(authResult){
+SimpleBirthdayReminder.prototype.handleGoogleAuthResult = function(authResult){
 	if (authResult && !authResult.error) {
 		ga('send', 'event', 'automatic', 'authorization', 'success', {
 			'nonInteraction' : true
 		});
 		self.statusText = 'Authorization successful.';
-		self.authorized = true;
+		self.googleAuthorized = true;
 		// Access token has been successfully retrieved, requests can be sent to
 		// the API.
 		
@@ -332,7 +342,7 @@ SimpleBirthdayReminder.prototype.spreadsheetCells = function (JSON_response, tar
 	}
 	
 	self.updateComplete = true;
-	localStorage['backgroundTimeout'] = this.window.setTimeout(self.requestAuth, MILLISECONDS_IN_HOUR);
+	localStorage['backgroundTimeout'] = this.window.setTimeout(self.requestGoogleAuth, MILLISECONDS_IN_HOUR);
 }
 
 /**
@@ -361,7 +371,7 @@ SimpleBirthdayReminder.prototype.downloadFile = function(targetUrl, callback){
 			
 		}
 		else{
-			self.requestAuth();
+			self.requestGoogleAuth();
 		}
 	}
 	else {

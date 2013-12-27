@@ -10,63 +10,108 @@ function handleClientLoad(){
 function checkAuth(){
 	var backgroundPage = chrome.extension.getBackgroundPage();
 	var sbr = backgroundPage.sbr;
+	var FB = backgroundPage.FB;
 	
 	backgroundPage.ga('send', 'pageview', {
 		'page': '/popup.html',
 		'title': 'Popup'
 	});
 
-	if(sbr.authorized){
-		if(sbr.apiOk){
-			if(localStorage['stored_spreadsheet']){
-				sbr.loadSpreadsheet();
-				window.setTimeout(showData, 500);
-			}
-			else{
-				sbr.retrieveAllFiles(showList);
-			}
-		}
-		else{
-			sbr.requestAuth();
-			window.setTimeout(checkAuth, 500);
-		}
+
+	var content_html = '';
+	var googleReady = false;
+	
+	// handle Google
+	if(sbr.googleAuthorized){
+		content_html = 'Authorized with Google. <br />';
+		var googleReady = true;
+//		if(sbr.apiOk){
+//			if(localStorage['stored_spreadsheet']){
+//				sbr.loadSpreadsheet();
+//				window.setTimeout(showData, 500);
+//			}
+//			else{
+//				sbr.retrieveAllFiles(showList);
+//			}
+//		}
+//		else{
+//			sbr.requestGoogleAuth();
+//			window.setTimeout(checkAuth, 500);
+//		}
 	}
 	else{
+		$('#pre-content').hide();
+		
 		// No access token could be retrieved, show the button to start the
 		// authorization flow.
-		$('#content').html('<input type="button" id="authorizeButton" value="Authorize" />');
+		$('#content').html('<input type="button" id="authorizeGoogleButton" value="Authorize with Google" />');
 
-		$('#authorizeButton').on('click', function(){
-			backgroundPage.ga('send', 'event', 'button', 'click', 'authorization');
+		$('#authorizeGoogleButton').on('click', function(){
+			backgroundPage.ga('send', 'event', 'button', 'click', 'google authorization');
 
 			gapi.auth.authorize({
 				'client_id' : sbr.clientId,
 				'scope' : sbr.scopes,
 				'immediate' : false
-			}, handleAuthResult);
+			}, handleGoogleAuthResult);
 			
 			$('#pre-content').hide();
 			$('#content').html('Click Continue after closing the authorization window.<br /><input type="button" id="continueButton" value="Continue" />');
 
 			$('#continueButton').on('click', function(){
-				backgroundPage.ga('send', 'event', 'button', 'click', 'authorization continue');
+				backgroundPage.ga('send', 'event', 'button', 'click', 'google authorization continue');
 
 				$('#pre-content').show();
 				$('#content').html('');
-				sbr.requestAuth();
+				sbr.requestGoogleAuth();
 				window.setTimeout(checkAuth, 500);
 			});
 		});
 	}
+	
+	// handle facebook
+	if(FB.getLoginStatus(checkFacebookLoginStatus)){
+		
+	}
+	else{
+		$('#pre-content').hide();
+
+		// No access token could be retrieved, show the button to start the
+		// authorization flow.
+		$('#content').html('<input type="button" id="authorizeFacebookButton" value="Authorize with Facebook" />');
+
+		$('#authorizeFacebookButton').on('click', function(){
+			backgroundPage.ga('send', 'event', 'button', 'click', 'facebook authorization');
+
+			//FB.login(checkFacebookLoginStatus, {scope:'friends_birthday'});
+			var scope = 'friends_birthday'
+			var url = "https://graph.facebook.com/oauth/authorize?client_id=" + backgroundPage.FB_APP_ID + "&redirect_uri=http://simple-birthday-reminder.googlecode.com/svn/trunk/sbrjs/facebook.html&type=user_agent&display=page&scope=" + scope;
+			window.open(url, 'checkFacebookLoginStatus');			
+			
+			$('#pre-content').hide();
+			$('#content').html('Click Continue after closing the authorization window.<br /><input type="button" id="continueButton" value="Continue" />');
+
+			$('#continueButton').on('click', function(){
+				backgroundPage.ga('send', 'event', 'button', 'click', 'facebook authorization continue');
+
+				$('#pre-content').show();
+				$('#content').html('');
+				sbr.requestGoogleAuth();
+				window.setTimeout(checkAuth, 500);
+			});
+		});
+		
+	}
+	
 }
 
-function handleAuthResult(authResult){
+function handleGoogleAuthResult(authResult){
 	if (authResult && !authResult.error) {
 		ga('send', 'event', 'automatic', 'authorization', 'success', {
 			'nonInteraction' : true
 		});
 
-		sbr.requestAuth();
+		sbr.requestGoogleAuth();
 		window.setTimeout(checkAuth, 1000);
 	}
 	else {
@@ -76,6 +121,28 @@ function handleAuthResult(authResult){
 
 
 	}
+}
+
+// Check the result of the user status and display login button if necessary
+function checkFacebookLoginStatus(response) {
+  if(response && response.status == 'connected') {
+    alert('User is authorized');
+    
+    FB.api('/me/friends', {'fields': 'id,name,birthday'}, function(response) {
+        console.log('Good to see you, ' + response + '.');
+      });
+    
+    // Hide the login button
+    document.getElementById('loginButton').style.display = 'none';
+    
+    // Now Personalize the User Experience
+   // console.log('Access Token: ' + response.authResponse.accessToken);
+  } else {
+    alert('User is not authorized');
+    
+    // Display the login button
+    document.getElementById('loginButton').style.display = 'block';
+  }
 }
 
 /**
@@ -281,6 +348,8 @@ function showData(){
 			postContentHtml += '<div class="icon-wrapper"><span class="ui-icon ui-icon-plusthick" title="Add Birthday" id="addBirthdayButton"></span></div>';
 		}
 		
+		refreshHtml += '<div class="icon-wrapper" style="float: right;"><span class="ui-icon ui-icon-help" title="Help" id="helpButton"></span></div>';
+		
 		postContentHtml += refreshHtml;
 		
 		var contentHtml = tableHtml;
@@ -372,7 +441,7 @@ function showData(){
 			backgroundPage.clearTimeout(parseInt(localStorage['backgroundTimeout']));
 		}
 		
-		sbr.requestAuth();
+		sbr.requestGoogleAuth();
 		window.setTimeout(showData, 500);
 	}
 	
