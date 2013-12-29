@@ -2133,7 +2133,7 @@ function setRaw(/*string*/ prefix, /*string*/ val, /*number*/ ts) {__t([prefix, 
     document.cookie = prefix + '=; expires=Wed, 04 Feb 2004 08:00:00 GMT;';
     
     document.cookie = prefix  + '=; expires=Wed, 04 Feb 2004 08:00:00 GMT;' +
-      'domain=' + location.hostname + ';';
+      'domain=' + 'simple-birthday-reminder.googlecode.com' + ';';
   }
 
   var expires = new Date(ts).toGMTString();
@@ -2931,11 +2931,11 @@ function URL(/*string*/ url) {__t([url, 'string', 'url']);
   
   
   
-  var useDefaults = !!location.hostname;
+  var useDefaults = !!'simple-birthday-reminder.googlecode.com';
 
   this.setProtocol(match[4] ||
     (useDefaults ? location.protocol.replace(/:/, '') : ''));
-  this.setDomain(match[6] || location.hostname);
+  this.setDomain(match[6] || 'simple-birthday-reminder.googlecode.com');
   this.setPort(match[8] || (useDefaults && !match[6] ? location.port : ''));
   this.setPath(match[9] || '');
   this.setSearch(match[11] || '');
@@ -4456,7 +4456,7 @@ var XD = {
     return handlerDomain + '/' + XDConfig.XdUrl + '#' + QueryString.encode({
       cb        : this.registerCallback(cb, forever, id),
       origin    : origin + '/' + channel,
-      domain    : location.hostname,
+      domain    : 'simple-birthday-reminder.googlecode.com',
       relation  : relation || 'opener'
     });
   }.apply(this, arguments), 'string']);}, {"signature":"function(function,?string,?boolean,?string):string"}),
@@ -4671,7 +4671,7 @@ function fetchLoginStatus(/*function*/ fn) {__t([fn, 'function', 'fn']);
     .setSearch(QueryString.encode({
       client_id: Runtime.getClientID(),
       response_type: 'token,signed_request,code',
-      domain: location.hostname,
+      domain: 'simple-birthday-reminder.googlecode.com',
       origin: getContextType(),
       redirect_uri: XD.handler(__w(function(/*object*/ response) {__t([response, 'object', 'response']);
         if (feature('e2e_ping_tracking', true)) {
@@ -7394,7 +7394,7 @@ var Methods = {
             client_id : Runtime.getClientID(),
             origin : getContextType(),
             response_type: 'token,signed_request',
-            domain: location.hostname
+            domain: 'simple-birthday-reminder.googlecode.com'
           });
 
         call.cb = Auth.xdResponseWrapper(
@@ -7412,7 +7412,7 @@ var Methods = {
                 'permissions.oauth')),
             origin : getContextType(),
             response_type: 'token,signed_request',
-            domain: location.hostname
+            domain: 'simple-birthday-reminder.googlecode.com'
           });
       }
 
@@ -7454,7 +7454,7 @@ var Methods = {
                                          'login_status'),
         origin : getContextType(),
         response_type : 'token,signed_request,code',
-        domain: location.hostname
+        domain: 'simple-birthday-reminder.googlecode.com'
       });
 
       return call;
@@ -8174,7 +8174,7 @@ FB.provide('', {
         display: canvas
           ? 'async'
           : 'popup',
-        domain: location.hostname
+        domain: 'simple-birthday-reminder.googlecode.com'
       }, opts || {}),
     cb);
   }, {"signature":"function(?function,?object)"}),
@@ -9904,7 +9904,7 @@ var types = {
     return value ? resolveURI(value) : value;
   }.apply(this, arguments), '?string']);}, {"signature":"function(?string):?string"}),
   hostname: __w(function(/*?string*/ value) /*?string*/ {__t([value, '?string', 'value']);return __t([function() {
-    return value || window.location.hostname;
+    return value || 'simple-birthday-reminder.googlecode.com';
   }.apply(this, arguments), '?string']);}, {"signature":"function(?string):?string"}),
   px: __w(function(/*?string*/ value) /*?number*/ {__t([value, '?string', 'value']);return __t([function() {
     return (/^(\d+)(?:px)?$/).test(value) ? parseInt(RegExp.$1, 10) : undefined;

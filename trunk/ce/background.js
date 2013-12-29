@@ -33,12 +33,21 @@ function beginBackgroundUpdate(){
 		text : '?'
 	});
 	
-	sbr.requestGoogleAuth();
+	sbr.loadData();
 }
 
 chrome.runtime.onMessageExternal.addListener(
 		function(request, sender, sendResponse) {
-			var backgroundPage = chrome.extension.getBackgroundPage();
-			var FB = backgroundPage.FB;
-			return  FB;
+			if(sender.url){
+				var start = sender.url.indexOf('=') + 1;
+				var end = sender.url.indexOf('&');
+				var access_token = sender.url.substring(start, end);
+				
+				var backgroundPage = chrome.extension.getBackgroundPage();
+				var FB = backgroundPage.FB;
+				
+				FB.setAccessToken(access_token);
+				
+				chrome.extension.sendRequest(chrome.i18n.getMessage("@@extension_id"), {});
+			}
 });
