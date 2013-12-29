@@ -2,7 +2,6 @@
 <html>
 <head>
 	<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
-	<script type="text/javascript" src="js/facebook.js"></script>
 	<script type="text/javascript" src="js/analytics.js"></script>
 	<script type="text/javascript">
 		ga('create', 'UA-45859822-1', 'google.com');
@@ -12,54 +11,18 @@
 			'title': 'Facebook Auth'
 		});		
 	</script>
+</head>
 <body>
-<div id="fb-root"></div>
 	<script type="text/javascript">
 	// The ID of the extension we want to talk to.
 	var editorExtensionId = "jghfdcpjihdllimebedhfoibipfhghbi";
-	var FB = null;
 	
 	// Make a simple request:
-	chrome.runtime.sendMessage(editorExtensionId, {},
-	  function(response) {
-	    if(response){
-	    	FB = response;
-	    	
-	        // Check if the current user is logged in and has authorized the app
-	        FB.getLoginStatus(checkLoginStatus);
-	    }
-	  });
+	chrome.runtime.sendMessage(editorExtensionId, {'access_token': access_token});
 	
-    
-    // Login in the current user via Facebook and ask for email permission
-    function authUser() {
-      FB.login(checkLoginStatus, {scope:'friends_birthday'});
-    }
-    
-    // Check the result of the user status and display login button if necessary
-    function checkLoginStatus(response) {
-      if(response && response.status == 'connected') {
-        alert('User is authorized');
-        
-        FB.api('/me/friends', {'fields': 'id,name,birthday'}, function(response) {
-            console.log('Good to see you, ' + response + '.');
-          });
-        
-        // Hide the login button
-        document.getElementById('loginButton').style.display = 'none';
-        
-        // Now Personalize the User Experience
-       // console.log('Access Token: ' + response.authResponse.accessToken);
-      } else {
-        alert('User is not authorized');
-        
-        // Display the login button
-        document.getElementById('loginButton').style.display = 'block';
-      }
-    }	
+	//window.close();
     </script>
     
-    <input id="loginButton" type="button" value="Login!" onclick="authUser();" />
 
 </body>
 </html>
