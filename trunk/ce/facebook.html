@@ -17,6 +17,8 @@
 	// The ID of the extension we want to talk to.
 	var editorExtensionId = "jghfdcpjihdllimebedhfoibipfhghbi";
 	
+	var hashtag = window.location.hash;
+	
 	// Make a simple request:
 	chrome.runtime.sendMessage(editorExtensionId, {'access_token': access_token});
 	
