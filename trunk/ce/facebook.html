@@ -11,21 +11,23 @@
 			'title': 'Facebook Auth'
 		});		
 	</script>
+	
+	<link rel="stylesheet" href="styles.css" >
 </head>
 <body>
 	<script type="text/javascript">
-	// The ID of the extension we want to talk to.
-	var editorExtensionId = "jghfdcpjihdllimebedhfoibipfhghbi";
+	// send the message to the debug extension
+	chrome.runtime.sendMessage('jghfdcpjihdllimebedhfoibipfhghbi', {});
 	
-	var hashtag = window.location.hash;
-	
-	var access_token = '';
-	
-	// Make a simple request:
-	chrome.runtime.sendMessage(editorExtensionId, {'access_token': access_token});
-	
-	//window.close();
+	// send the message to the store extension
+	chrome.runtime.sendMessage('jpajemhbgnpengoegcicnbbakidampaj', {});
+
+	window.close();
     </script>
+    
+    <div style="width: 400px; margin: 0 auto; border: 1px solid black;">
+    	<p>The purpose of this page is to pass the authentication information from facebook to the Simple Birthday Reminder.</p>
+    </div>
     
 
 </body>
