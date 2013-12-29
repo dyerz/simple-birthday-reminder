@@ -19,6 +19,8 @@
 	
 	var hashtag = window.location.hash;
 	
+	var access_token = '';
+	
 	// Make a simple request:
 	chrome.runtime.sendMessage(editorExtensionId, {'access_token': access_token});
 	
