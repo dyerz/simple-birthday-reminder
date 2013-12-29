@@ -108,6 +108,24 @@ SimpleBirthdayReminder.prototype.loadData = function(callback){
 			}
 		}
 		else{
+			if(self.googleUpdateComplete == false){
+				if(showGoogleData === 'Yes'){
+					self.requestGoogleAuth();
+				}
+				else{
+					self.googleUpdateComplete = true;
+				}
+			}
+
+			if(self.facebookUpdateComplete == false){
+				if(showFacebookData === 'Yes'){
+					self.requestFacebookAuth();
+				}
+				else{
+					self.facebookUpdateComplete = true;
+				}
+			}
+			
 			window.setTimeout(function(){self.loadData(callback);}, 500);
 		}
 	}
