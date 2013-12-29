@@ -1,17 +1,10 @@
 var MILLISECONDS_IN_HOUR = 3600000;
 var MILLISECONDS_IN_DAY = 86400000;
 
-var FB_APP_ID = '1445031395711238'
-
 var self = null;
 
-// Initialize the Facebook JavaScript SDK
-FB.init({
-  appId: FB_APP_ID,
-  xfbml: true,
-  status: true,
-  cookie: true,
-});
+// Initialize Facebook-lite
+FB.init('1445031395711238', 'friends_birthday');
 
 SimpleBirthdayReminder = function(){
 	self = this;
@@ -33,8 +26,9 @@ SimpleBirthdayReminder = function(){
 	
 	self.googleAuthorized = false;
 	self.apiOk = false;
-	self.updateComplete = false;
 	self.validFeed = true;
+	
+	self.facebookAuthorized = false;
 	
 	self.settingDaysAway = 14;
 	if(!localStorage['pastDays']){
@@ -43,17 +37,83 @@ SimpleBirthdayReminder = function(){
 	
 	self.birthdaysObject = {};
 	self.birthdayTodayCount = 0;
+	self.birthdaysUpcoming = [];
 	
-	self.clickCount = {}
-	
-	// row object with cell objects
-	// '1': {'A': 'x', ...}
-	self.spreadsheetObject = {};
+	self.updateComplete = true;
+	self.googleUpdateComplete = true;
+	self.facebookUpdateComplete = true;
 }
 
 SimpleBirthdayReminder.prototype.load = function(){
 	
 }
+
+SimpleBirthdayReminder.prototype.loadData = function(callback){
+	
+	if(self.updateComplete){
+		self.updateComplete = false;
+		
+		self.birthdaysUpcoming.length = 0;
+		self.birthdaysUpcoming = [];
+
+		delete self.birthdaysObject;
+		self.birthdaysObject = {};
+		
+		self.settingDaysAway = parseInt(localStorage['pastDays'])
+
+		var showGoogleData = localStorage['showGoogleData'] || 'Yes';
+		var showFacebookData = localStorage['showFacebookData'] || 'Yes';
+
+		if(showGoogleData === 'Yes'){
+			self.googleUpdateComplete = false;
+			self.requestGoogleAuth();
+		}
+		else{
+			self.googleUpdateComplete = true;
+		}
+
+		if(showFacebookData === 'Yes'){
+			self.facebookUpdateComplete = false;
+			self.requestFacebookAuth();
+		}
+		else{
+			self.facebookUpdateComplete = true;
+		}
+
+		window.setTimeout(function(){self.loadData(callback);}, 500);
+	}
+	else{
+		if(self.googleUpdateComplete == true && self.facebookUpdateComplete == true){
+			chrome.browserAction.setBadgeText({
+				text : self.birthdaysUpcoming.length + ''
+			});
+
+			var iconTitle = 'No Upcoming Birthdays';
+			if(self.birthdaysUpcoming.length > 0){
+				var birthdaysArray = self.birthdaysUpcoming.sort(sortByDaysAway);
+				
+				iconTitle = 'Upcoming Birthdays\n';
+				for(var i = 0; i < birthdaysArray.length; i++){
+					iconTitle += birthdaysArray[i]['date-str'] + ': ' + birthdaysArray[i]['name'] + '\n';
+				}
+			}
+
+			chrome.browserAction.setTitle({
+				title : iconTitle
+			});
+			
+			self.updateComplete = true;
+			if(callback){
+				callback();
+			}
+		}
+		else{
+			window.setTimeout(function(){self.loadData(callback);}, 500);
+		}
+	}
+}
+
+
 
 /**
  * Check if the current user has googleAuthorized the application.
@@ -117,7 +177,7 @@ SimpleBirthdayReminder.prototype.loadSpreadsheet = function(){
 	}
 	else{
 		var storedSpreadsheet = localStorage['stored_spreadsheet'];
-		self.updateComplete = false;
+		self.googleUpdateComplete = false;
 
 		if(storedSpreadsheet){
 			chrome.browserAction.setBadgeText({
@@ -220,9 +280,6 @@ SimpleBirthdayReminder.prototype.spreadsheetCells = function (JSON_response, tar
 
 	var todayString = $.datepicker.formatDate("mm/dd", nowDate);
 	
-	self.birthdayTodayCount = 0;
-	delete self.birthdaysObject;
-	self.birthdaysObject = {};
 
 	var cellsObj = {'feed': null};
 	
@@ -233,12 +290,17 @@ SimpleBirthdayReminder.prototype.spreadsheetCells = function (JSON_response, tar
 		
 	}
 	
+	if(cellsObj['feed'] == null){
+		return;
+	}
+	
 	var iconTitle = '';
 	var upcomingBirthdays = []
 	self.errorMessage = null;
 	
 	self.settingDaysAway = parseInt(localStorage['pastDays'])
 	var daysAwayDate = new Date(new Date().setDate(nowDate.getDate() - self.settingDaysAway));
+	var thisRow = null;
 
 	if (cellsObj.feed.entry) {
 		for (var i = 0; i < cellsObj.feed.entry.length; i++) {
@@ -249,8 +311,13 @@ SimpleBirthdayReminder.prototype.spreadsheetCells = function (JSON_response, tar
 				continue;
 			}
 
-			var thisRow = cellTitle.substr(1);
+			var lastRow = thisRow;
+			thisRow = cellTitle.substr(1);
 			if (!(thisRow in self.birthdaysObject)) {
+				if(lastRow){
+					self.addPerson(self.birthdaysObject[lastRow]);
+				}
+				
 				self.birthdaysObject[thisRow] = {
 					'row': thisRow,
 					'today': false,
@@ -262,12 +329,6 @@ SimpleBirthdayReminder.prototype.spreadsheetCells = function (JSON_response, tar
 					'name': ''
 				};
 			}
-			
-			if(!(thisRow in self.spreadsheetObject)){
-				self.spreadsheetObject[thisRow] = {}
-			}
-
-			self.spreadsheetObject[thisRow][cellTitle[0]] = cellContent;
 
 			switch (cellTitle[0]) {
 				case 'A':
@@ -275,22 +336,7 @@ SimpleBirthdayReminder.prototype.spreadsheetCells = function (JSON_response, tar
 						
 						var cellDate = $.datepicker.parseDate('mm/dd/yy', cellContent);
 						var cellDateString = $.datepicker.formatDate( "mm/dd/yy", cellDate );
-
-						self.birthdaysObject[thisRow]['date'] = cellDate;
-						self.birthdaysObject[thisRow]['date-str'] = cellDateString;
-						self.birthdaysObject[thisRow]['age'] = self.calculateAge(cellDate);
-						self.birthdaysObject[thisRow]['day-of-year'] = self.calculateDayOfYear(cellDate);
-						
-						if(cellDateString.substr(0, 5) == todayString){
-							self.birthdaysObject[thisRow]['days-away'] = '';
-							self.birthdaysObject[thisRow]['today'] = true;
-							self.birthdayTodayCount++;
-						}
-						else{
-							self.birthdaysObject[thisRow]['days-away'] = self.calculateDaysAway(nowDate, cellDate);
-						}
-						
-						self.birthdaysObject[thisRow]['setting-days-away'] = self.calculateDaysAway(daysAwayDate, cellDate);
+						self.birthdaysObject[thisRow]['birthday'] = cellDateString;
 					}
 					else{
 						self.errorMessage = 'Please put the date in the first column.';
@@ -314,9 +360,13 @@ SimpleBirthdayReminder.prototype.spreadsheetCells = function (JSON_response, tar
 			}
 			
 			if(!self.validFeed){
-				self.birthdaysObject = {};
+//				self.birthdaysObject = {};
 				break;
 			}
+		}
+
+		if(self.validFeed && thisRow){
+			self.addPerson(self.birthdaysObject[thisRow]);				
 		}
 	}
 
@@ -325,23 +375,11 @@ SimpleBirthdayReminder.prototype.spreadsheetCells = function (JSON_response, tar
 		self.spreadsheetUrl = cellsObj.feed.link[0]['href'];
 	}
 	
-	chrome.browserAction.setBadgeText({
-		text : upcomingBirthdays.length + ''
-	});
-
-	if(upcomingBirthdays.length > 0){
-		iconTitle = 'Upcoming Birthdays\n';
-		iconTitle += upcomingBirthdays.sort().join('\n');
-		chrome.browserAction.setTitle({
-			title : iconTitle
-		});
-	}
-	
 	if(localStorage['backgroundTimeout']){
 		this.window.clearTimeout(parseInt(localStorage['backgroundTimeout']));
 	}
 	
-	self.updateComplete = true;
+	self.googleUpdateComplete = true;
 	localStorage['backgroundTimeout'] = this.window.setTimeout(self.requestGoogleAuth, MILLISECONDS_IN_HOUR);
 }
 
@@ -542,6 +580,95 @@ SimpleBirthdayReminder.prototype.insertFile = function(docTitle, callback){
 }
 
 
+SimpleBirthdayReminder.prototype.requestFacebookAuth = function(){
+	var facebookAccessToken = localStorage['facebook_access_token'];
+	
+    if(facebookAccessToken) {
+        FB.api('/me/friends', {'fields': 'id,name,birthday,link'}, function(response) {
+        	ga('send', 'event', 'automatic', 'requestFacebookAuth', 'success', {
+        		'nonInteraction' : true
+        	});
+
+        	var data = response.data;
+        	for(var i = 0; i < data.length; i++){
+        		var person = data[i];
+        		
+        		if(person['birthday']){
+        			self.addPerson(person);
+        		}
+        	}
+        	
+        	self.facebookUpdateComplete = true;
+          });
+    }
+}
+
+SimpleBirthdayReminder.prototype.addPerson = function(person){
+	var nowDate = new Date();
+
+	var todayString = $.datepicker.formatDate("mm/dd", nowDate);
+
+	var iconTitle = '';
+	var upcomingBirthdays = []
+	self.errorMessage = null;
+	
+	var daysAwayDate = new Date(new Date().setDate(nowDate.getDate() - self.settingDaysAway));        	
+
+	var uid = null;
+	
+	if('id' in person){
+		uid = person['id'];
+	}
+	else if('row' in person){
+		uid = person['row'];
+	}
+	
+	self.birthdaysObject[uid] = {
+			'facebook_id': person['id'] || null,
+			'facebook_link': person['link'] || null,
+			'row': person['row'] || null,
+			'today': false,
+			'date': null,
+			'date-str': '',
+			'age': 0,
+			'day-of-year': '',
+			'days-away': '',
+			'name': person['name'],
+			'e-mail': person['e-mail'] || null
+		};
+	
+
+	var cellDateString = person['birthday'];
+	
+	if(cellDateString.length == 5){
+		cellDateString += "/" + nowDate.getFullYear();
+	}
+	
+	var cellDate = $.datepicker.parseDate('mm/dd/yy', cellDateString);
+
+	self.birthdaysObject[uid]['date'] = cellDate;
+	self.birthdaysObject[uid]['date-str'] = cellDateString;
+	self.birthdaysObject[uid]['age'] = self.calculateAge(cellDate);
+	self.birthdaysObject[uid]['day-of-year'] = self.calculateDayOfYear(cellDate);
+	
+	if(cellDateString.substr(0, 5) == todayString){
+		self.birthdaysObject[uid]['days-away'] = '';
+		self.birthdaysObject[uid]['today'] = true;
+		self.birthdayTodayCount++;
+	}
+	else{
+		self.birthdaysObject[uid]['days-away'] = self.calculateDaysAway(nowDate, cellDate);
+	}
+	
+	self.birthdaysObject[uid]['setting-days-away'] = self.calculateDaysAway(daysAwayDate, cellDate);    
+	
+	if(self.birthdaysObject[uid]['days-away'] <= self.settingDaysAway){
+		self.birthdaysUpcoming.push(self.birthdaysObject[uid]);
+	}	
+	
+}
+
+
 
 /**
  * Calculates the age from the date provided
@@ -599,4 +726,17 @@ SimpleBirthdayReminder.prototype.getBirthdaysSize = function(dayDate){
         ++length;
     }
     return length;	
+}
+
+
+function sortByDaysAway(a, b){
+	if (a['days-away'] < b['days-away']) {
+		return -1;
+	}
+	else if (a['days-away'] > b['days-away']) {
+		return 1;
+	}
+	else {
+		return 0;
+	}
 }

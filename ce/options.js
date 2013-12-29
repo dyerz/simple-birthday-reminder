@@ -2,17 +2,68 @@ window.setTimeout(optionsLoad, 1);
 
 function optionsLoad(){
 	var backgroundPage = chrome.extension.getBackgroundPage();
+	var sbr = backgroundPage.sbr;
 	
 	backgroundPage.ga('send', 'pageview', {
 		'page': '/options.html',
 		'title': 'Options'
 	});
 	
-	var iconBadgeColor = localStorage['iconBadgecColor'];
-	
-	if(!iconBadgeColor){
-		iconBadgeColor = '#FF0000';
+	var iconBadgeColor = localStorage['iconBadgecColor'] || '#FF0000';
+	var showGoogleData = localStorage['showGoogleData'] || 'Yes';
+	var showFacebookData = localStorage['showFacebookData'] || 'Yes';
+
+	if(showGoogleData === 'Yes'){
+		$('#googleCheckbox').attr('checked', 'checked');
 	}
+	
+	$('#googleCheckbox').on('change', function(){
+		showGoogleData = localStorage['showGoogleData'] || 'Yes';
+		showFacebookData = localStorage['showFacebookData'] || 'Yes';
+		
+		if(showFacebookData === 'Yes'){
+			if($(this).is(":checked")){
+				localStorage['showGoogleData'] = 'Yes';
+			}
+			else{
+				localStorage['showGoogleData'] = 'No';
+			}
+			
+			sbr.loadData();
+		}
+		else{
+			alert('You must select at least one type of data to view.');
+			this.checked = true;
+			return false;
+		}
+		
+	});
+	
+	if(showFacebookData === 'Yes'){
+		$('#facebookCheckbox').attr('checked', 'checked');
+	}
+
+	$('#facebookCheckbox').on('change', function(){
+		showFacebookData = localStorage['showFacebookData'] || 'Yes';
+		
+		if(showGoogleData === 'Yes'){
+			if($(this).is(":checked")){
+				localStorage['showFacebookData'] = 'Yes';
+			}
+			else{
+				localStorage['showFacebookData'] = 'No';
+			}
+
+			sbr.loadData();
+		}
+		else{
+			alert('You must select at least one type of data to view.');
+			this.checked = true;
+			return false;
+		}
+		
+	});
+	
 	
 	$("#iconBadgeColor").spectrum({
 	    color: iconBadgeColor,
@@ -33,8 +84,13 @@ function optionsLoad(){
 	$("#clearSettings").on('click', function(){
 		delete localStorage['iconBadgecColor'];
 		
+		delete localStorage['facebook_access_token']
+		
 		delete localStorage['worksheet_url'];
 		delete localStorage['stored_spreadsheet'];
+		
+		delete localStorage['showGoogleData'];
+		delete localStorage['showFacebookData'];
 		
 		if(localStorage['backgroundTimeout']){
 			backgroundPage.window.clearTimeout(parseInt(localStorage['backgroundTimeout']));
