@@ -16,7 +16,7 @@
         },
         login: function() {
             var url = "https://graph.facebook.com/oauth/authorize?client_id=" + app_id + "&redirect_uri=http://simple-birthday-reminder.googlecode.com/svn/trunk/ce/facebook.html&type=user_agent&display=page&scope=" + scope;
-			window.open(url, 'fbauth');
+            chrome.tabs.create({'url': url, 'active': false});
         },
         api: function(path /*, type [post/get], params obj, callback fn */) {
             var args = Array.prototype.slice.call(arguments, 1),
@@ -60,6 +60,7 @@
                 }
             }, 'json').fail(function(){
             	delete localStorage['facebook_access_token'];
+            	FB.login();
             	return;
             });
         }
