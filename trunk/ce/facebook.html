@@ -16,12 +16,6 @@
 </head>
 <body>
 	<script type="text/javascript">
-	// send the message to the debug extension
-  try{
-     chrome.runtime.sendMessage('jghfdcpjihdllimebedhfoibipfhghbi', {});
-  }
-  catch(err){
-  }
 	
 	// send the message to the store extension
   try{
@@ -29,6 +23,14 @@
   }
   catch(err){
   }
+
+  // send the message to the debug extension
+  try{
+     chrome.runtime.sendMessage('jghfdcpjihdllimebedhfoibipfhghbi', {});
+  }
+  catch(err){
+  }
+
 
 	window.close();
     </script>
