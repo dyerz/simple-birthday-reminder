@@ -19,20 +19,25 @@
 	
 	// send the message to the store extension
   try{
-     chrome.runtime.sendMessage('jpajemhbgnpengoegcicnbbakidampaj', {});
+     chrome.runtime.sendMessage('jpajemhbgnpengoegcicnbbakidampaj', '', {}, sendMessageResponse);
   }
   catch(err){
   }
 
   // send the message to the debug extension
   try{
-     chrome.runtime.sendMessage('jghfdcpjihdllimebedhfoibipfhghbi', {});
+     chrome.runtime.sendMessage('jghfdcpjihdllimebedhfoibipfhghbi', '', {}, sendMessageResponse);
   }
   catch(err){
   }
 
 
      //window.close();
+     
+     function sendMessageResponse(response){
+       console.log(response);
+     
+     }
     </script>
     
     <div style="width: 400px; margin: 0 auto; border: 1px solid black;">
