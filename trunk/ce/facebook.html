@@ -17,10 +17,18 @@
 <body>
 	<script type="text/javascript">
 	// send the message to the debug extension
-	chrome.runtime.sendMessage('jghfdcpjihdllimebedhfoibipfhghbi', {});
+  try{
+     chrome.runtime.sendMessage('jghfdcpjihdllimebedhfoibipfhghbi', {});
+  }
+  catch(err){
+  }
 	
 	// send the message to the store extension
-	chrome.runtime.sendMessage('jpajemhbgnpengoegcicnbbakidampaj', {});
+  try{
+     chrome.runtime.sendMessage('jpajemhbgnpengoegcicnbbakidampaj', {});
+  }
+  catch(err){
+  }
 
 	window.close();
     </script>
