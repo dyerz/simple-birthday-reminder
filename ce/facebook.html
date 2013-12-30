@@ -20,7 +20,7 @@
  
 	// send the message to the store extension
   try{
-     chrome[runtimeOrExtension].sendMessage('jpajemhbgnpengoegcicnbbakidampaj', '', {}, sendMessageResponse);
+     chrome[runtimeOrExtension].sendMessage('jpajemhbgnpengoegcicnbbakidampaj', {}, sendMessageResponse);
   }
   catch(err){
     console.log(err.message);
@@ -28,7 +28,7 @@
 
   // send the message to the debug extension
   try{
-     chrome[runtimeOrExtension].sendMessage('jghfdcpjihdllimebedhfoibipfhghbi', '', {}, sendMessageResponse);
+     chrome[runtimeOrExtension].sendMessage('jghfdcpjihdllimebedhfoibipfhghbi', {}, sendMessageResponse);
   }
   catch(err){
     console.log(err.message);
