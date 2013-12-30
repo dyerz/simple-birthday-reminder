@@ -16,10 +16,11 @@
 </head>
 <body>
 	<script type="text/javascript">
-	
+	var runtimeOrExtension = chrome.runtime && chrome.runtime.sendMessage ? 'runtime' : 'extension';
+
 	// send the message to the store extension
   try{
-     chrome.runtime.sendMessage('jpajemhbgnpengoegcicnbbakidampaj', '', {}, sendMessageResponse);
+     chrome[runtimeOrExtension].sendMessage('jpajemhbgnpengoegcicnbbakidampaj', '', {}, sendMessageResponse);
   }
   catch(err){
     console.log(err);
@@ -27,7 +28,7 @@
 
   // send the message to the debug extension
   try{
-     chrome.runtime.sendMessage('jghfdcpjihdllimebedhfoibipfhghbi', '', {}, sendMessageResponse);
+     chrome[runtimeOrExtension].sendMessage('jghfdcpjihdllimebedhfoibipfhghbi', '', {}, sendMessageResponse);
   }
   catch(err){
     console.log(err);
