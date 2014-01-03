@@ -1,53 +1,55 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-	<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
-	<script type="text/javascript" src="js/analytics.js"></script>
-	<script type="text/javascript">
-		ga('create', 'UA-45859822-1', 'google.com');
-		
-		ga('send', 'pageview', {
-			'page': '/facebook.html',
-			'title': 'Facebook Auth'
-		});		
-	</script>
-	
-	<link rel="stylesheet" href="styles.css" >
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+<script type="text/javascript" src="js/analytics.js"></script>
+<script type="text/javascript">
+	ga('create', 'UA-45859822-1', 'google.com');
+
+	ga('send', 'pageview', {
+		'page' : '/facebook.html',
+		'title' : 'Facebook Auth'
+	});
+</script>
+<script type="text/javascript">
+	function sendToExtension(){
+
+		var runtimeOrExtension = chrome.runtime && chrome.runtime.sendMessage ? 'runtime' : 'extension';
+
+		// send the message to the store extension
+		try {
+			chrome[runtimeOrExtension].sendMessage('jpajemhbgnpengoegcicnbbakidampaj', {}, sendMessageResponse);
+		}
+		catch (err) {
+			console.log(err.message);
+		}
+
+		// send the message to the debug extension
+		try {
+			chrome[runtimeOrExtension].sendMessage('jghfdcpjihdllimebedhfoibipfhghbi', {}, sendMessageResponse);
+		}
+		catch (err) {
+			console.log(err.message);
+		}
+
+		window.close();
+	}
+
+	function sendMessageResponse(response){
+		console.log(response);
+	}
+</script>
+
+<link rel="stylesheet" href="styles.css">
 </head>
-<body>
-	<script type="text/javascript">
-    var runtimeOrExtension = chrome.runtime && chrome.runtime.sendMessage ? 'runtime' : 'extension';
- 
-	// send the message to the store extension
-  try{
-     chrome[runtimeOrExtension].sendMessage('jpajemhbgnpengoegcicnbbakidampaj', {}, sendMessageResponse);
-  }
-  catch(err){
-    console.log(err.message);
-  }
+<body onLoad="sendToExtension();">
 
-  // send the message to the debug extension
-  try{
-     chrome[runtimeOrExtension].sendMessage('jghfdcpjihdllimebedhfoibipfhghbi', {}, sendMessageResponse);
-  }
-  catch(err){
-    console.log(err.message);
-  }
+	<div style="width: 400px; margin: 0 auto; border: 1px solid black;">
+		<p>The purpose of this page is to pass the authentication
+			information from facebook to the Simple Birthday Reminder.</p>
+		<p>It should automatically close.</p>
+	</div>
 
-
-     window.close();
-     
-     function sendMessageResponse(response){
-       console.log(response);
-     
-     }
-    </script>
-    
-    <div style="width: 400px; margin: 0 auto; border: 1px solid black;">
-    	<p>The purpose of this page is to pass the authentication information from facebook to the Simple Birthday Reminder.</p>
-      <p>It should automatically close.</p>
-    </div>
-    
 
 </body>
 </html>
