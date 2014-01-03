@@ -1,48 +1,46 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
-<script type="text/javascript" src="js/analytics.js"></script>
-<script type="text/javascript">
-	ga('create', 'UA-45859822-1', 'google.com');
-
-	ga('send', 'pageview', {
-		'page' : '/facebook.html',
-		'title' : 'Facebook Auth'
-	});
-</script>
-<script type="text/javascript">
-	function sendToExtension(){
-
-		var runtimeOrExtension = chrome.runtime && chrome.runtime.sendMessage ? 'runtime' : 'extension';
-
-		// send the message to the store extension
-		try {
-			chrome[runtimeOrExtension].sendMessage('jpajemhbgnpengoegcicnbbakidampaj', {}, sendMessageResponse);
-		}
-		catch (err) {
-			console.log(err.message);
-		}
-
-		// send the message to the debug extension
-		try {
-			chrome[runtimeOrExtension].sendMessage('jghfdcpjihdllimebedhfoibipfhghbi', {}, sendMessageResponse);
-		}
-		catch (err) {
-			console.log(err.message);
-		}
-
-		window.close();
-	}
-
-	function sendMessageResponse(response){
-		console.log(response);
-	}
-</script>
-
-<link rel="stylesheet" href="styles.css">
+	<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+	<script type="text/javascript" src="js/analytics.js"></script>
+	<script type="text/javascript" src="js/jquery-1.9.1.js"></script>
+	<script type="text/javascript">
+	</script>
+	<script type="text/javascript">
+		$(function(){
+			ga('create', 'UA-45859822-1', 'google.com');
+			
+			ga('send', 'pageview', {
+				'page' : '/facebook.html',
+				'title' : 'Facebook Auth'
+			});
+			
+			var runtimeOrExtension = chrome.runtime && chrome.runtime.sendMessage ? 'runtime' : 'extension';
+			
+			// send the message to the store extension
+			try {
+				chrome[runtimeOrExtension].sendMessage('jpajemhbgnpengoegcicnbbakidampaj', {}, sendMessageResponse);
+			}
+			catch (err) {
+				console.log(err.message);
+			}
+	
+			// send the message to the debug extension
+			try {
+				chrome[runtimeOrExtension].sendMessage('jghfdcpjihdllimebedhfoibipfhghbi', {}, sendMessageResponse);
+			}
+			catch (err) {
+				console.log(err.message);
+			}
+	
+			window.close();
+		});
+	
+	</script>
+	
+	<link rel="stylesheet" href="styles.css">
 </head>
-<body onLoad="sendToExtension();">
+<body>
 
 	<div style="width: 400px; margin: 0 auto; border: 1px solid black;">
 		<p>The purpose of this page is to pass the authentication
