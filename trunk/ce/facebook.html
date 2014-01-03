@@ -12,39 +12,51 @@
 				  'cookieDomain': 'auto'
 				});	
 			
-			ga('send', 'pageview', {
-				'page' : '/facebook.html',
-				'title' : 'Facebook Auth'
-			});
-			
 			sendMessageToExtension();
 
 			$('#goNow').on('click', function(){
-				sendMessageToExtension();
+				window.open('', '_self', '');
+				window.close();
 			});
 			
 		});
 		
 		function sendMessageToExtension(){
-			var runtimeOrExtension = chrome.runtime && chrome.runtime.sendMessage ? 'runtime' : 'extension';
+			if(window.location.pathname.indexOf('error') != -1){
+				ga('send', 'pageview', {
+					'page' : '/facebook.html',
+					'title' : 'Facebook Auth'
+				});
+				
+				var runtimeOrExtension = chrome.runtime && chrome.runtime.sendMessage ? 'runtime' : 'extension';
+				
+				// send the message to the store extension
+				try {
+					chrome[runtimeOrExtension].sendMessage('jpajemhbgnpengoegcicnbbakidampaj', {}, sendMessageResponse);
+				}
+				catch (err) {
+					console.log(err.message);
+				}
+		
+				// send the message to the debug extension
+				try {
+					chrome[runtimeOrExtension].sendMessage('jghfdcpjihdllimebedhfoibipfhghbi', {}, sendMessageResponse);
+				}
+				catch (err) {
+					console.log(err.message);
+				}
+		
+				window.close();
+			}
+			else{
+				ga('send', 'pageview', {
+					'page' : '/facebook.html' + window.location.search,
+					'title' : 'Facebook Auth'
+				});
+				
+				$('purpose').html('<p>You must allow the Simple Birthday Reminder app to access your Facebook account if you want to see your friends\' birthdays</p>');
+			}
 			
-			// send the message to the store extension
-			try {
-				chrome[runtimeOrExtension].sendMessage('jpajemhbgnpengoegcicnbbakidampaj', {}, sendMessageResponse);
-			}
-			catch (err) {
-				console.log(err.message);
-			}
-	
-			// send the message to the debug extension
-			try {
-				chrome[runtimeOrExtension].sendMessage('jghfdcpjihdllimebedhfoibipfhghbi', {}, sendMessageResponse);
-			}
-			catch (err) {
-				console.log(err.message);
-			}
-	
-			window.close();
 		}
 		
 		function sendMessageResponse(response){
@@ -57,11 +69,13 @@
 </head>
 <body>
 
-	<div style="width: 400px; margin: 0 auto; border: 1px solid black;">
-		<p>The purpose of this page is to pass the authentication
-			information from facebook to the Simple Birthday Reminder.</p>
-		<p>It should automatically close.</p>
-		<input type="button" id="goNow" value="Close Window" />
+	<div style="width: 400px; margin: 0 auto; padding: 5px; border: 1px solid black;">
+		<div id="purpose">
+			<p>The purpose of this page is to pass the authentication
+				information from facebook to the Simple Birthday Reminder.</p>
+			<p>It should automatically close.</p>
+		</div>
+		<div style="text-align: center;"><input type="button" id="goNow" value="Close Window" /></div>
 	</div>
 
 
