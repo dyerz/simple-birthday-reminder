@@ -17,6 +17,14 @@
 				'title' : 'Facebook Auth'
 			});
 			
+			sendMessageToExtension();
+		});
+		
+		$('#goNow').on('click', function(){
+			sendMessageToExtension();
+		});
+		
+		function sendMessageToExtension(){
 			var runtimeOrExtension = chrome.runtime && chrome.runtime.sendMessage ? 'runtime' : 'extension';
 			
 			// send the message to the store extension
@@ -36,7 +44,7 @@
 			}
 	
 			window.close();
-		});
+		}
 	
 	</script>
 	
@@ -48,6 +56,7 @@
 		<p>The purpose of this page is to pass the authentication
 			information from facebook to the Simple Birthday Reminder.</p>
 		<p>It should automatically close.</p>
+		<input type="button" id="goNow" value="Close Window" />
 	</div>
 
 
