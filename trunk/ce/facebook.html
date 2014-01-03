@@ -22,7 +22,7 @@
 		});
 		
 		function sendMessageToExtension(){
-			if(window.location.search.length > 1){
+			if(window.location.search.length === 0){
 				ga('send', 'pageview', {
 					'page' : '/facebook.html',
 					'title' : 'Facebook Auth'
