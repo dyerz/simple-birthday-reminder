@@ -8,6 +8,10 @@ ga('create', 'UA-45859822-1', {
 
 addScript('https://apis.google.com/js/client.js?onload=beginBackgroundUpdate');
 
+$(function(){
+	$('body').append('<iframe id="facebookAuthFrame" style="width: 1px; height: 1px; position: absolute; top: -100px;"></iframe>');
+});
+
 function addScript(src){
 	var s = document.createElement('script');
 	s.setAttribute('src', src);
@@ -21,7 +25,7 @@ function beginBackgroundUpdate(){
 	});
 
 	
-	var iconBadgeColor = localStorage['iconBadgecColor'];
+	var iconBadgeColor = localStorage.iconBadgecColor;
 	
 	if(!iconBadgeColor){
 		iconBadgeColor = '#FF0000';

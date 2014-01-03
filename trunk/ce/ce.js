@@ -32,14 +32,14 @@ function checkAuth(){
 
 	$('#pre-content').hide();
 
-	var showGoogle = localStorage['showGoogleData'] || 'Yes';
+	var showGoogle = localStorage.showGoogleData || 'Yes';
 	
 	// handle Google
 	if(showGoogle === 'Yes'){
 		if(sbr.googleAuthorized){
 			google_content_html = 'Authorized with Google.';
 			if(sbr.apiOk){
-				if(localStorage['stored_spreadsheet']){
+				if(localStorage.stored_spreadsheet){
 					googleReady = true;
 					google_content_html = 'Ready to Load Spreadsheet Data.';
 					sbr.loadSpreadsheet();
@@ -66,7 +66,7 @@ function checkAuth(){
 		googleReady = true;
 	}
 	
-	var showFacebook = localStorage['showFacebookData'] || 'Yes';
+	var showFacebook = localStorage.showFacebookData || 'Yes';
 	
 	// handle facebook
 	if(showFacebook === 'Yes'){
@@ -85,12 +85,11 @@ function checkAuth(){
 		facebook_content_html += ' <input type="button" id="skipFacebook" value="Skip Facebook" />';				
 	}
 	
+	$('#content').html(google_content_html + '<br />' + facebook_content_html);
+
 	if(googleReady && facebookReady){
 		$('#pre-content').show();
 		sbr.loadData(showData);
-	}
-	else{
-		$('#content').html(google_content_html + '<br />' + facebook_content_html);
 	}
 	
 	$('#authorizeGoogleButton').on('click', function(){
@@ -128,10 +127,10 @@ function checkAuth(){
 	
 	$('#skipGoogleSpreadsheet').on('click', function(){
 		backgroundPage.ga('send', 'event', 'button', 'click', 'skip spreadsheet');
-		var showFacebook = localStorage['showFacebookData'] || 'Yes';
+		var showFacebook = localStorage.showFacebookData || 'Yes';
 		
 		if(showFacebook === 'Yes'){
-			localStorage['showGoogleData'] = 'No';
+			localStorage.showGoogleData = 'No';
 			checkAuth();
 		}
 		else{
@@ -147,10 +146,10 @@ function checkAuth(){
 
 	$('#skipFacebook').on('click', function(){
 		backgroundPage.ga('send', 'event', 'button', 'click', 'skip facebook');
-		var showGoogle = localStorage['showGoogleData'] || 'Yes';
+		var showGoogle = localStorage.showGoogleData || 'Yes';
 		
 		if(showGoogle === 'Yes'){
-			localStorage['showFacebookData'] = 'No';
+			localStorage.showFacebookData = 'No';
 			checkAuth();
 		}
 		else{
@@ -183,22 +182,22 @@ function handleGoogleAuthResult(authResult){
 // Check the result of the user status and display login button if necessary
 function checkFacebookLoginStatus(response) {
   if(response && response.status == 'connected') {
-    alert('User is authorized');
-    
-    FB.api('/me/friends', {'fields': 'id,name,birthday'}, function(response) {
-        console.log('Good to see you, ' + response + '.');
-      });
-    
-    // Hide the login button
-    document.getElementById('loginButton').style.display = 'none';
-    
-    // Now Personalize the User Experience
+	alert('User is authorized');
+	
+	FB.api('/me/friends', {'fields': 'id,name,birthday'}, function(response) {
+		console.log('Good to see you, ' + response + '.');
+	});
+	
+	// Hide the login button
+	document.getElementById('loginButton').style.display = 'none';
+	
+	// Now Personalize the User Experience
    // console.log('Access Token: ' + response.authResponse.accessToken);
   } else {
-    alert('User is not authorized');
-    
-    // Display the login button
-    document.getElementById('loginButton').style.display = 'block';
+	alert('User is not authorized');
+	
+	// Display the login button
+	document.getElementById('loginButton').style.display = 'block';
   }
 }
 
@@ -236,7 +235,7 @@ function showData(){
 		}
 		
 		if(birthdaysArray.length > 0){
-			if(sbr.birthdayTodayCount == 0){
+			if(sbr.birthdayTodayCount === 0){
 				var todayDate = new Date();
 				var todayString = $.datepicker.formatDate('mm/dd', todayDate);
 				birthdaysArray.push({
@@ -264,7 +263,7 @@ function showData(){
 				
 				var todayClass = '';
 				
-				if(birthdaysArray[i]['today']){
+				if(birthdaysArray[i].today){
 					todayClass = ' class="birthdayToday"';
 				}
 				
@@ -272,32 +271,32 @@ function showData(){
 
 
 				var date_html = birthdaysArray[i]['date-str'];
-				var age_html = birthdaysArray[i]['age'];
-				if('facebook_id' in birthdaysArray[i] && age_html == '0'){
+				var age_html = birthdaysArray[i].age;
+				if('facebook_id' in birthdaysArray[i] && age_html === '0'){
 					date_html = date_html.substring(0, 5);
 					age_html = '';
 				}
 				
 				tableHtml += '<td class="centered">' + date_html + '</td>';
-				tableHtml += '<td>' + birthdaysArray[i]['name'] + '</td>';
+				tableHtml += '<td>' + birthdaysArray[i].name + '</td>';
 				tableHtml += '<td class="centered">' + age_html + '</td>';
 				tableHtml += '<td class="centered">' + birthdaysArray[i]['days-away'] + '</td>';
 
 				var email_html = '';
 				
-				if(birthdaysArray[i]['setting-days-away'] <= 2 * localStorage['pastDays'] && birthdaysArray[i]['name'] !== 'Today'){
+				if(birthdaysArray[i]['setting-days-away'] <= 2 * localStorage.pastDays && birthdaysArray[i].name !== 'Today'){
 					email_html += '<img class="amazonIcon" src="amazon.ico" title="Send Them an Amazon Gift Card" />';
 				}
 				
 				if (birthdaysArray[i]['e-mail']) {
 					email_html += ' <div class="icon-wrapper"><span id="email_' + i + '" class="ui-icon ui-icon-mail-closed" title="Send Email"></span></div>';
 				}
-				else if(birthdaysArray[i]['facebook_id']){
+				else if(birthdaysArray[i].facebook_id){
 					email_html += ' <img class="facebookIcon" id="facebookIcon_' + i + '" src="facebook.ico" title="Write on Their Wall" />';
 				}
 				
-				if(birthdaysArray[i]['row']){
-					email_html += '<div class="icon-wrapper" style="float: right;"><span id="edit_' + birthdaysArray[i]['row'] + '" class="ui-icon ui-icon-pencil" title="Edit Details"></span></div>';
+				if(birthdaysArray[i].row){
+					email_html += '<div class="icon-wrapper" style="float: right;"><span id="edit_' + birthdaysArray[i].row + '" class="ui-icon ui-icon-pencil" title="Edit Details"></span></div>';
 				}
 
 				tableHtml += '<td>' + email_html + '</td>';
@@ -313,7 +312,7 @@ function showData(){
 			tableHtml = 'Spreadsheet contains no data.';
 		}
 
-		var showGoogle = localStorage['showGoogleData'] || 'Yes';
+		var showGoogle = localStorage.showGoogleData || 'Yes';
 		var postContentHtml = '';
 		
 		if(showGoogle === 'Yes'){
@@ -324,7 +323,7 @@ function showData(){
 				postContentHtml += '<div class="icon-wrapper"><span class="ui-icon ui-icon-document" title="Edit Spreadsheet" id="viewSpreadsheetButton"></span></div>';
 			}
 			
-			var worksheetUrl = localStorage['worksheet_url']
+			var worksheetUrl = localStorage.worksheet_url;
 			if(worksheetUrl){
 				postContentHtml += '<div class="icon-wrapper"><span class="ui-icon ui-icon-plusthick" title="Add Birthday" id="addBirthdayButton"></span></div>';
 			}
@@ -369,7 +368,7 @@ function showData(){
 		});	
 		
 		$('.ui-icon-mail-closed').each(function(){
-			var rowId = parseInt(this.id.split('_')[1]);
+			var rowId = parseInt(this.id.split('_')[1], 10);
 			
 			$(this).on('click', function(){
 				if(rowId < birthdaysArray.length){
@@ -390,8 +389,8 @@ function showData(){
 
 		$('.facebookIcon').on('click', function(){
 			backgroundPage.ga('send', 'event', 'button', 'click', 'send facebook');
-			var id = parseInt(this.id.split('_')[1]);
-			var facebookUrl = birthdaysArray[id]['facebook_link']
+			var id = parseInt(this.id.split('_')[1], 10);
+			var facebookUrl = birthdaysArray[id].facebook_link;
 			
 			chrome.tabs.create({ url: facebookUrl });
 		});		
@@ -399,7 +398,7 @@ function showData(){
 		$('.ui-icon-pencil').each(function(){
 			$(this).on('click', function(){
 				var rowKey = this.id.split('_')[1];
-				showAddOverlay(parseInt(rowKey));
+				showAddOverlay(parseInt(rowKey, 10));
 			});
 		});		
 		
@@ -408,7 +407,7 @@ function showData(){
 			showAddOverlay(null);
 		});		
 
-		if(sbr.validFeed && birthdaysArray.length == 0){
+		if(sbr.validFeed && birthdaysArray.length === 0){
 			backgroundPage.ga('send', 'event', 'automatic', 'showData', 'empty spreadsheet', {
 				'nonInteraction' : true
 			});
@@ -417,8 +416,8 @@ function showData(){
 
 	}
 	else{
-		if(localStorage['backgroundTimeout']){
-			backgroundPage.clearTimeout(parseInt(localStorage['backgroundTimeout']));
+		if(localStorage.backgroundTimeout){
+			backgroundPage.clearTimeout(parseInt(localStorage.backgroundTimeout, 10));
 		}
 		
 		sbr.loadData(showData);
@@ -441,9 +440,9 @@ function showAddOverlay(rowKey){
 	var nextRow = sbr.getBirthdaysSize() + 1;
 
 	if(rowKey){
-		nameVal = sbr.birthdaysObject[rowKey]['name'];
+		nameVal = sbr.birthdaysObject[rowKey].name;
 		birthdayVal = sbr.birthdaysObject[rowKey]['date-str'];
-		emailVal = sbr.birthdaysObject[rowKey]['email'];
+		emailVal = sbr.birthdaysObject[rowKey]['e-mail'];
 		nextRow = rowKey;
 	}
 
@@ -457,8 +456,8 @@ function showAddOverlay(rowKey){
 	$('#birthdayInput').datepicker({
 		showOtherMonths: true,
 		selectOtherMonths: true,
-	    changeMonth: true,
-	    changeYear: true
+		changeMonth: true,
+		changeYear: true
 	});
    
 	$('#overlay').on('click', function(){
@@ -486,7 +485,7 @@ function showAddOverlay(rowKey){
 		}
 		
 		var dateOk = false;
-		if(birthday != '' && birthday.match(/\d{1,2}\/\d{1,2}\/\d{2,4}/)){
+		if(birthday !== '' && birthday.match(/\d{1,2}\/\d{1,2}\/\d{2,4}/)){
 			dateOk = true;
 		}
 		
@@ -540,8 +539,8 @@ function showSpreadsheetOverlay(result){
 
 		var fileListerHtml = '<select id="fileLister">';
 		fileListerHtml += '<option>Select a Spreadsheet</option>';
-		for (var i = 0; i < spreadsheets.length; i++) {
-			fileListerHtml += '<option value="' + spreadsheets[i].id + '" >' + spreadsheets[i].title + '</option>';
+		for (var j = 0; j < spreadsheets.length; j++) {
+			fileListerHtml += '<option value="' + spreadsheets[j].id + '" >' + spreadsheets[j].title + '</option>';
 		}
 
 		fileListerHtml += '</select>';
@@ -564,8 +563,8 @@ function showSpreadsheetOverlay(result){
 	$('#fileLister').on('change', function(evt){
 		backgroundPage.ga('send', 'event', 'button', 'click', 'select spreadsheet');
 		
-		delete localStorage['worksheet_url'];
-		localStorage['stored_spreadsheet'] = evt.target.value;
+		delete localStorage.worksheet_url;
+		localStorage.stored_spreadsheet = evt.target.value;
 
 		$('#pre-content').show();
 		$('#content').html('');
@@ -575,7 +574,7 @@ function showSpreadsheetOverlay(result){
 
 	$('#createNewButton').on('click', function(){
 		var title = $('#newSpreadsheetTitle').val();
-		if (title == '') {
+		if (title === '') {
 			alert('Please enter a title.');
 			return;
 		}
@@ -615,7 +614,7 @@ function saveComplete(){
 		$('#overlay-form-div').hide();
 		$('#save-spinner').hide();
 		
-		sbr.loadData(showData)
+		sbr.loadData(showData);
 	}
 	else{
 		SAVE_RELOAD_COUNTER++;
@@ -631,10 +630,10 @@ function saveComplete(){
 
 function xmlEscape(unsafe){
 	return unsafe
-	    .replace(/&/g, "&amp;")
-	    .replace(/</g, "&lt;")
-	    .replace(/>/g, "&gt;")
-	    .replace(/"/g, "&quot;");
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(/"/g, "&quot;");
 }
 
 /**
