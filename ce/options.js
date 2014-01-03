@@ -9,24 +9,24 @@ function optionsLoad(){
 		'title': 'Options'
 	});
 	
-	var iconBadgeColor = localStorage['iconBadgecColor'] || '#FF0000';
-	var showGoogleData = localStorage['showGoogleData'] || 'Yes';
-	var showFacebookData = localStorage['showFacebookData'] || 'Yes';
+	var iconBadgeColor = localStorage.iconBadgecColor || '#FF0000';
+	var showGoogleData = localStorage.showGoogleData || 'Yes';
+	var showFacebookData = localStorage.showFacebookData || 'Yes';
 
 	if(showGoogleData === 'Yes'){
 		$('#googleCheckbox').attr('checked', 'checked');
 	}
 	
 	$('#googleCheckbox').on('change', function(){
-		showGoogleData = localStorage['showGoogleData'] || 'Yes';
-		showFacebookData = localStorage['showFacebookData'] || 'Yes';
+		showGoogleData = localStorage.showGoogleData || 'Yes';
+		showFacebookData = localStorage.showFacebookData || 'Yes';
 		
 		if(showFacebookData === 'Yes'){
 			if($(this).is(":checked")){
-				localStorage['showGoogleData'] = 'Yes';
+				localStorage.showGoogleData = 'Yes';
 			}
 			else{
-				localStorage['showGoogleData'] = 'No';
+				localStorage.showGoogleData = 'No';
 			}
 			
 			sbr.loadData();
@@ -44,14 +44,14 @@ function optionsLoad(){
 	}
 
 	$('#facebookCheckbox').on('change', function(){
-		showFacebookData = localStorage['showFacebookData'] || 'Yes';
+		showFacebookData = localStorage.showFacebookData || 'Yes';
 		
 		if(showGoogleData === 'Yes'){
 			if($(this).is(":checked")){
-				localStorage['showFacebookData'] = 'Yes';
+				localStorage.showFacebookData = 'Yes';
 			}
 			else{
-				localStorage['showFacebookData'] = 'No';
+				localStorage.showFacebookData = 'No';
 			}
 
 			sbr.loadData();
@@ -66,41 +66,44 @@ function optionsLoad(){
 	
 	
 	$("#iconBadgeColor").spectrum({
-	    color: iconBadgeColor,
-	    change: function(newColor){
-	    	var newColorString = newColor.toHexString();
-	    	localStorage['iconBadgecColor'] = newColorString;
-	    	chrome.browserAction.setBadgeBackgroundColor({color: newColorString});
-	    }
+		color: iconBadgeColor,
+		change: function(newColor){
+			var newColorString = newColor.toHexString();
+			localStorage.iconBadgecColor = newColorString;
+			chrome.browserAction.setBadgeBackgroundColor({color: newColorString});
+		}
 	});	
 	
-	$("#pastDays").val(localStorage['pastDays']).prop('selected', true);
+	$("#pastDays").val(localStorage.pastDays).prop('selected', true);
 
 	$("#pastDays").on('change', function(){
-		localStorage['pastDays'] = this.value;
+		localStorage.pastDays = this.value;
 	});
 
 	
 	$("#clearSettings").on('click', function(){
-		delete localStorage['iconBadgecColor'];
+		sbr.googleAuthorized = false;
+		sbr.facebookAuthorized = false;
 		
-		delete localStorage['facebook_access_token']
+		delete localStorage.iconBadgecColor;
 		
-		delete localStorage['worksheet_url'];
-		delete localStorage['stored_spreadsheet'];
+		delete localStorage.facebook_access_token;
 		
-		delete localStorage['showGoogleData'];
-		delete localStorage['showFacebookData'];
+		delete localStorage.worksheet_url;
+		delete localStorage.stored_spreadsheet;
 		
-		if(localStorage['backgroundTimeout']){
-			backgroundPage.window.clearTimeout(parseInt(localStorage['backgroundTimeout']));
-			delete localStorage['backgroundTimeout'];
+		delete localStorage.showGoogleData;
+		delete localStorage.showFacebookData;
+		
+		if(localStorage.backgroundTimeout){
+			backgroundPage.window.clearTimeout(parseInt(localStorage.backgroundTimeout, 10));
+			delete localStorage.backgroundTimeout;
 		}
 
 		chrome.runtime.reload();
 //		var id = chrome.i18n.getMessage("@@extension_id");
-//	    chrome.management.setEnabled(id, false, function() {
-//	        chrome.management.setEnabled(id, true);
-//	    });
+//		chrome.management.setEnabled(id, false, function() {
+//			chrome.management.setEnabled(id, true);
+//		});
 	});
 }

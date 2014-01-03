@@ -163,3 +163,8 @@ div.ui-datepicker {
 	width: 16px;
 	cursor: pointer;
 }
+
+#facebookAuthFrame{
+	height: 0px;
+	width: 0px;
+}
