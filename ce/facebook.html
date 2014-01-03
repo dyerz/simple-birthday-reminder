@@ -22,7 +22,7 @@
 		});
 		
 		function sendMessageToExtension(){
-			if(window.location.pathname.indexOf('error') != -1){
+			if(window.location.search.length > 1){
 				ga('send', 'pageview', {
 					'page' : '/facebook.html',
 					'title' : 'Facebook Auth'
@@ -54,7 +54,7 @@
 					'title' : 'Facebook Auth'
 				});
 				
-				$('purpose').html('<p>You must allow the Simple Birthday Reminder app to access your Facebook account if you want to see your friends\' birthdays</p>');
+				$('#purpose').html('<p>You must allow the Simple Birthday Reminder app to access your Facebook account if you want to see your friends\' birthdays</p>');
 			}
 			
 		}
